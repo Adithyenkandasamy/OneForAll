@@ -62,6 +62,5 @@ def get_server(name: str, servers_file: Path = SERVERS_FILE) -> dict[str, Any]:
         return servers[name]
     except KeyError:
         raise McpConfigError(
-            f"MCP server {name!r} not found in {servers_file.name}. "
-            f"Available: {', '.join(servers)}"
+            f"MCP server {name!r} not found in {servers_file.name}. Available: {', '.join(servers)}"
         ) from None

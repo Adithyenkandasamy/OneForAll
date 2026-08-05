@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from typing import Any
+from uuid import uuid4
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -31,6 +32,7 @@ def _create_token(subject: str, expires_delta: timedelta, secret: str, **claims:
     now = datetime.now(timezone.utc)
     payload: dict[str, Any] = {
         "sub": subject,
+        "jti": uuid4().hex,
         "iat": now,
         "exp": now + expires_delta,
     }

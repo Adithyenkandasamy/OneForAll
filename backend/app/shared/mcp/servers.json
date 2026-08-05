@@ -2,15 +2,10 @@
   "mcpServers": {
     "toolbox": {
       "type": "http",
-      "url": "https://mcp.smithery.ai/SMITHIRY_SPACE",
+      "url": "${SMITHIRY_SPACE}",
       "headers": {
         "Authorization": "Bearer ${SMITHIRY_AI}"
       }
-    },
-    "toolbox_fake": {
-      "type": "stdio",
-      "command": "uv",
-      "args": ["run", "python", "-m", "tests.mocks.fake_sheets_mcp"]
     }
   }
 }

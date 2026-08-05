@@ -35,6 +35,7 @@ class Settings(BaseSettings):
 
     mcp_sheets_server_name: str = "toolbox"
     smithiry_ai: str = ""
+    smithiry_space: str = ""
     mcp_tool_timeout_seconds: int = 30
 
     smtp_host: str = ""
@@ -51,6 +52,26 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             return [origin.strip() for origin in v.strip("[]").split(",") if origin.strip()]
         return v
+
+    @property
+    def db_dsn(self) -> str:
+        """SQLAlchemy async DSN: DATABASE_URL, else SUPABASE_URL (Postgres DSN)."""
+        dsn = self.database_url or self.supabase_url
+        if not dsn:
+            return "sqlite+aiosqlite:///:memory:"
+        if dsn.startswith("postgres://"):
+            dsn = dsn.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif dsn.startswith("postgresql://"):
+            dsn = dsn.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return dsn
+
+    @property
+    def supabase_rest_url(self) -> str:
+        """REST project URL for the supabase-py client, derived from the DSN host."""
+        if self.supabase_url.startswith("postgres") and "@" in self.supabase_url:
+            host = self.supabase_url.split("@", 1)[1].split(":", 1)[0]
+            return f"https://{host}"
+        return self.supabase_url
 
 
 settings = Settings()
