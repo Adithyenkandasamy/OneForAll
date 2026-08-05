@@ -46,3 +46,9 @@ https://nextjs.org/telemetry
  GET /maintenance 200 in 279ms
  ✓ Compiled /analytics in 2.4s
  GET /inventory 200 in 1515ms
+ ✓ Compiled /maintenance in 337ms
+ GET /maintenance 200 in 1969ms
+ GET /maintenance 200 in 2008ms
+ ✓ Compiled in 274ms
+ GET /maintenance 200 in 787ms
+ GET /maintenance 200 in 327ms
