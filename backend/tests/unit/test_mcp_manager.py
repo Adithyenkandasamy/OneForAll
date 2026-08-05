@@ -50,7 +50,7 @@ def test_load_servers_accepts_flat_file_without_mcpservers_key(tmp_path):
 
 def test_missing_env_var_raises(tmp_path, monkeypatch):
     monkeypatch.setattr(manager, "SERVERS_DIR", tmp_path)
-    var = "GOOGLE_APPLICATION_CREDENTIALS"
+    var = "MISSING_ENV_VAR_FOR_TEST"
     cfg = {"gsheets": {"env": {var: "${" + var + "}"}}}
     _write(tmp_path, "gsheets.json", cfg)
     monkeypatch.delenv(var, raising=False)

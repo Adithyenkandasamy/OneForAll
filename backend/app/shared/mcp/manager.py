@@ -18,6 +18,8 @@ from typing import Any
 
 from dotenv import load_dotenv
 
+from app.core.config import ENV_FILE
+
 SERVERS_DIR = Path(__file__).parent / "servers"
 _ENV_PATTERN = re.compile(r"\${([A-Za-z_][A-Za-z0-9_]*)}")
 
@@ -63,7 +65,7 @@ def load_servers(servers_file: Path | None = None) -> dict[str, dict[str, Any]]:
     Each ``servers/*.json`` file may hold an ``mcpServers`` object or a flat
     map of server names to configs. Duplicate names across files are rejected.
     """
-    load_dotenv()
+    load_dotenv(ENV_FILE)
     paths = [servers_file] if servers_file is not None else sorted(SERVERS_DIR.glob("*.json"))
     servers: dict[str, dict[str, Any]] = {}
     for path in paths:

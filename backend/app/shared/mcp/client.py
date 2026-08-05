@@ -14,6 +14,8 @@ import json
 from collections.abc import Awaitable, Callable
 from typing import Any, TypeVar
 
+from anyio import get_cancelled_exc_class
+from exceptiongroup import BaseExceptionGroup
 from mcp import ClientSession
 
 from app.core.exceptions import McpUnavailableError
@@ -27,13 +29,20 @@ T = TypeVar("T")
 
 _SessionFn = Callable[[ClientSession], Awaitable[T]]
 
-_CANCEL_SCOPE_MARKERS = ("cancel scope", "cancel_scope")
-
 
 def _as_unavailable(error: BaseException) -> McpUnavailableError:
     if isinstance(error, McpUnavailableError):
         return error
-    return McpUnavailableError(f"MCP server unreachable: {error}")
+    return McpUnavailableError(f"MCP server unreachable: {_describe(error)}")
+
+
+def _describe(exc: BaseException) -> str:
+    """Flatten exception groups/causes into a readable one-line message."""
+    message = str(exc).strip()
+    if isinstance(exc, BaseExceptionGroup) and exc.exceptions:
+        inner = _describe(exc.exceptions[0])
+        return f"{message}: {inner}" if message else inner
+    return message or type(exc).__name__
 
 
 async def _with_session(server: dict[str, Any], fn: _SessionFn[T]) -> T:
@@ -49,15 +58,19 @@ async def _with_session(server: dict[str, Any], fn: _SessionFn[T]) -> T:
                     raise
     except McpUnavailableError:
         raise
-    except RuntimeError as exc:
-        if not any(marker in str(exc) for marker in _CANCEL_SCOPE_MARKERS):
-            raise
-        if error is not None:  # restore the real error the teardown bug swallowed
+    except get_cancelled_exc_class():  # type: ignore[call-overload]
+        raise
+    except BaseException as exc:
+        # Any transport/teardown noise (cancel-scope bug, exception groups from
+        # the stdio TaskGroup, server-side errors) becomes a clean 503. The
+        # original tool-call error, when present, is preserved as the cause.
+        if error is not None:
             raise _as_unavailable(error) from exc
-        raise McpUnavailableError("MCP server unreachable during session teardown") from exc
-    except Exception as exc:  # transport / init failures
-        logger.warning("MCP session failed", extra={"server": server.get("url"), "error": str(exc)})
-        raise McpUnavailableError(f"MCP server unreachable: {exc}") from exc
+        logger.warning(
+            "MCP session failed",
+            extra={"server": server.get("url") or server.get("command"), "error": str(exc)},
+        )
+        raise _as_unavailable(exc) from exc
     if error is not None:
         raise _as_unavailable(error) from None
     raise McpUnavailableError("MCP connection yielded no session")
