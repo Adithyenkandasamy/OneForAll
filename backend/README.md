@@ -39,8 +39,10 @@ uv run uvicorn app.main:app --reload
 - `DATABASE_URL` — SQLAlchemy async DSN. Optional; when unset `SUPABASE_URL` is used.
   Supabase's direct `db.<ref>.supabase.co` host is IPv6-only — from IPv4-only networks
   use the session pooler, e.g. `postgresql+asyncpg://postgres.<ref>:<pwd>@aws-0-<region>.pooler.supabase.com:5432/postgres`.
-- `SMITHIRY_AI` — Smithery API key.
-- `SMITHIRY_SPACE` — full Smithery toolbox URL, e.g. `https://mcp.smithery.ai/<space>`.
+- `GOOGLE_PROJECT_ID` — Google Cloud project id for the sheets service account.
+- `GOOGLE_APPLICATION_CREDENTIALS` — absolute path to the service-account JSON key.
+- `SHEETS_SPREADSHEET_ID` — the inventory Google Sheet (injected into every sheets call).
+- `SHEETS_RANGE` — A1 range of the inventory table, e.g. `Inventory!A1:H1000`.
 
 Platform tables (`users`, `ai_history`, `notifications`, ...) are created against the
 working database with:
@@ -51,8 +53,17 @@ uv run python -c "import asyncio; from app.database.session import init_db; asyn
 
 ### MCP integration notes
 
-The Smithery endpoint (`app/shared/mcp/servers.json` → server `toolbox`) is a **toolbox**
-runtime: Google Sheets must be connected and authorized there first
-(`get_toolbox_status` reports `auth_required` with a `setupUrl`). Once authorized, sheets
-tools are reachable via `search_toolbox` / `execute`; the inventory agent's tool gateway
-(`app/agents/inventory/mcp_tools.py`) filters the live tool list accordingly.
+MCP servers are declared **one JSON file per service** in
+`app/shared/mcp/servers/`; `app/shared/mcp/manager.py` loads every `*.json`
+and substitutes `${VAR}` placeholders from the environment. The inventory
+agent uses `servers/gsheets.json` → server `gsheets`, which is
+[`mcp-gsheets`](https://github.com/freema/mcp-gsheets) (freema), a stdio
+server launched via `npx -y mcp-gsheets@latest` with a Google service-account
+key. It exposes `sheets_*` tools (`sheets_get_values`, `sheets_append_values`,
+`sheets_update_values`, ...) that take a `spreadsheetId` and A1 ranges.
+
+The agent NEVER calls Google Sheets directly: `app/agents/inventory/mcp_tools.py`
+exposes a small semantic surface (`read_sheet`, `search_sheet`, `get_row`,
+`append_row`, `update_cell`) and translates each call to the real `sheets_*`
+tool, injecting `SHEETS_SPREADSHEET_ID` / `SHEETS_RANGE`. Missing credentials
+or an unreachable server surface as `MCP_UNAVAILABLE` (503).

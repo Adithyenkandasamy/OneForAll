@@ -89,7 +89,7 @@ class InventoryAgent:
         except Exception as exc:
             logger.warning("Unable to list MCP tools", extra={"error": str(exc)})
             return []
-        return [tool for tool in server_tools if tool.name in allowed]
+        return [tool for tool in server_tools if tool.name.split(".", 1)[-1] in allowed]
 
 
 def _extract_risk_flags(content: str) -> list[str]:

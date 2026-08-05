@@ -1,6 +1,8 @@
 """Security primitives: JWT access/refresh tokens and password hashing.
 
-Uses python-jose for JWT and passlib(bcrypt) for password hashing.
+Uses python-jose for JWT and bcrypt directly for password hashing
+(passlib is incompatible with bcrypt>=4; bcrypt's 72-byte limit is applied
+explicitly since bcrypt>=5 raises instead of truncating).
 Secrets come from configuration only — never hardcoded.
 """
 
@@ -10,22 +12,27 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import uuid4
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.exceptions import UnauthorizedError
-
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALGORITHM = "HS256"
 
 
+def _truncate(pw: str) -> bytes:
+    return pw.encode("utf-8")[:72]
+
+
 def hash_password(password: str) -> str:
-    return _pwd_context.hash(password)
+    return bcrypt.hashpw(_truncate(password), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return _pwd_context.verify(plain, hashed)
+    try:
+        return bcrypt.checkpw(_truncate(plain), hashed.encode("utf-8"))
+    except (ValueError, TypeError):
+        return False
 
 
 def _create_token(subject: str, expires_delta: timedelta, secret: str, **claims: Any) -> str:

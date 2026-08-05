@@ -27,22 +27,40 @@ T = TypeVar("T")
 
 _SessionFn = Callable[[ClientSession], Awaitable[T]]
 
+_CANCEL_SCOPE_MARKERS = ("cancel scope", "cancel_scope")
+
+
+def _as_unavailable(error: BaseException) -> McpUnavailableError:
+    if isinstance(error, McpUnavailableError):
+        return error
+    return McpUnavailableError(f"MCP server unreachable: {error}")
+
 
 async def _with_session(server: dict[str, Any], fn: _SessionFn[T]) -> T:
-    result: T | None = None
+    error: BaseException | None = None
     try:
         async for read, write in connect_server(server):
             async with ClientSession(read, write) as session:
                 await session.initialize()
-                result = await fn(session)
+                try:
+                    return await fn(session)
+                except BaseException as exc:  # capture before transport teardown
+                    error = exc
+                    raise
     except McpUnavailableError:
         raise
+    except RuntimeError as exc:
+        if not any(marker in str(exc) for marker in _CANCEL_SCOPE_MARKERS):
+            raise
+        if error is not None:  # restore the real error the teardown bug swallowed
+            raise _as_unavailable(error) from exc
+        raise McpUnavailableError("MCP server unreachable during session teardown") from exc
     except Exception as exc:  # transport / init failures
         logger.warning("MCP session failed", extra={"server": server.get("url"), "error": str(exc)})
         raise McpUnavailableError(f"MCP server unreachable: {exc}") from exc
-    if result is None:
-        raise McpUnavailableError("MCP connection yielded no session")
-    return result
+    if error is not None:
+        raise _as_unavailable(error) from None
+    raise McpUnavailableError("MCP connection yielded no session")
 
 
 async def list_tools(server: dict[str, Any]) -> list[ToolDefinition]:

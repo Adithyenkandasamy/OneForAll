@@ -33,9 +33,9 @@ class Settings(BaseSettings):
     llm_max_iterations: int = 5
     llm_max_tokens: int = 2048
 
-    mcp_sheets_server_name: str = "toolbox"
-    smithiry_ai: str = ""
-    smithiry_space: str = ""
+    mcp_sheets_server_name: str = "gsheets"
+    sheets_spreadsheet_id: str = ""
+    sheets_range: str = "Inventory!A1:H1000"
     mcp_tool_timeout_seconds: int = 30
 
     smtp_host: str = ""

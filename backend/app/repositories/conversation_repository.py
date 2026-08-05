@@ -42,3 +42,4 @@ class MessageRepository(BaseRepository[Message]):
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
+
