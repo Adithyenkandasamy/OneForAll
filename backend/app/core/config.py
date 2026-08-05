@@ -38,9 +38,10 @@ class Settings(BaseSettings):
     llm_max_iterations: int = 5
     llm_max_tokens: int = 2048
 
-    mcp_sheets_server_name: str = "gsheets"
+    mcp_sheets_server_name: str = "inventory-analytics"
     sheets_spreadsheet_id: str = ""
-    sheets_range: str = "Inventory!A1:H1000"
+    sheets_range: str = "Sheet1!A1:H1000"
+    google_application_credentials: str = ""
     mcp_tool_timeout_seconds: int = 30
 
     smtp_host: str = ""

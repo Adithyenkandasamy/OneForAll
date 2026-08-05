@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "inventory-analytics": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "app.mcp_servers.inventory_server"],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${GOOGLE_APPLICATION_CREDENTIALS}",
+        "SHEETS_SPREADSHEET_ID": "${SHEETS_SPREADSHEET_ID}",
+        "SHEETS_RANGE": "${SHEETS_RANGE}"
+      }
+    }
+  }
+}

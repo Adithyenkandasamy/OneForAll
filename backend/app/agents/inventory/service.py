@@ -38,7 +38,7 @@ class InventoryService:
         }
 
     async def search(self, query: str, *, limit: int = 25) -> list[InventoryItemDTO]:
-        result = await self._gateway.call_tool("search_sheet", {"query": query})
+        result = await self._gateway.call_tool("search_materials", {"query": query})
         if isinstance(result, dict):
             rows = [result]
         elif isinstance(result, list):
