@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import groq
@@ -51,7 +52,7 @@ class GroqProvider(LLMProvider):
             ToolCall(
                 id=call.id,
                 name=call.function.name,
-                arguments=dict(call.function.arguments or {}),
+                arguments=_parse_arguments(call.function.arguments),
             )
             for call in (message.tool_calls or [])
         ]
@@ -60,3 +61,16 @@ class GroqProvider(LLMProvider):
             tool_calls=tool_calls,
             model=self._model,
         )
+
+
+def _parse_arguments(raw: Any) -> dict[str, Any]:
+    """Groq returns tool arguments as a JSON string; some SDKs give a dict."""
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, str):
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+    return {}

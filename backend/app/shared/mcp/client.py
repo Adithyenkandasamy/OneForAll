@@ -3,15 +3,20 @@
 The rest of the platform interacts with Google Sheets ONLY through this
 client. The agent-facing abstraction lives in ``app/shared/agents``.
 
-IMPORTANT: never ``return``/``break`` from inside an ``async for`` over a
-transport generator — abandoning the generator corrupts the anyio cancel
-scope. The session helper exhausts the transport fully before returning.
+NOTE ON ISOLATION: mcp<2's ``stdio_client`` has a teardown bug that exits
+anyio cancel scopes from the wrong task. Running inside a live request (e.g.
+uvicorn) this cancels the request task itself, turning a failed MCP call into
+a 500. Every session therefore runs in its OWN event loop on a worker thread,
+so that corruption is fully contained and a failed call surfaces as a clean
+``McpUnavailableError`` (503).
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import Awaitable, Callable
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, TypeVar
 
 from anyio import get_cancelled_exc_class
@@ -29,6 +34,8 @@ T = TypeVar("T")
 
 _SessionFn = Callable[[ClientSession], Awaitable[T]]
 
+_EXECUTOR = ThreadPoolExecutor(max_workers=4, thread_name_prefix="mcp")
+
 
 def _as_unavailable(error: BaseException) -> McpUnavailableError:
     if isinstance(error, McpUnavailableError):
@@ -45,7 +52,7 @@ def _describe(exc: BaseException) -> str:
     return message or type(exc).__name__
 
 
-async def _with_session(server: dict[str, Any], fn: _SessionFn[T]) -> T:
+async def _session_body(server: dict[str, Any], fn: _SessionFn[T]) -> T:
     error: BaseException | None = None
     try:
         async for read, write in connect_server(server):
@@ -74,6 +81,21 @@ async def _with_session(server: dict[str, Any], fn: _SessionFn[T]) -> T:
     if error is not None:
         raise _as_unavailable(error) from None
     raise McpUnavailableError("MCP connection yielded no session")
+
+
+async def _with_session(server: dict[str, Any], fn: _SessionFn[T]) -> T:
+    """Run one MCP session in its own event loop (worker thread).
+
+    mcp's stdio teardown exits anyio cancel scopes from the wrong task; inside
+    a live request this cancels the request and yields a 500. A dedicated
+    loop per call contains the corruption so failures surface as 503 instead.
+    """
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(_EXECUTOR, _run_isolated, server, fn)
+
+
+def _run_isolated(server: dict[str, Any], fn: _SessionFn[T]) -> T:
+    return asyncio.run(_session_body(server, fn))
 
 
 async def list_tools(server: dict[str, Any]) -> list[ToolDefinition]:
