@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "toolbox": {
+      "type": "http",
+      "url": "https://mcp.smithery.ai/<namespace>",
+      "headers": {
+        "Authorization": "Bearer <api-key>"
+      }
+    }
+  }
+}
