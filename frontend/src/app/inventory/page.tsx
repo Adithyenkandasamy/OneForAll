@@ -150,9 +150,9 @@ export default function EditableInventoryPage() {
               Critical Stock Alerts
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-            {criticalItems.slice(0, 3).map((item) => (
-              <div key={item.sku} className="flex justify-between items-center p-3 rounded-lg border border-red-500/20 bg-background/50">
+          <CardContent className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
+            {criticalItems.map((item) => (
+              <div key={item.sku} className="min-w-[220px] flex-shrink-0 flex justify-between items-center p-3 rounded-lg border border-red-500/20 bg-background/50 snap-start">
                 <div>
                   <p className="text-sm font-medium leading-tight">{item.name}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">SKU: {item.sku}</p>
