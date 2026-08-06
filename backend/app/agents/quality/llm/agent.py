@@ -8,7 +8,7 @@ logger = get_logger(__name__)
 
 class QualityAgent:
     def __init__(self):
-        self.client = AsyncGroq(api_key=settings.GROQ_CENTRAL_API_KEY)
+        self.client = AsyncGroq(api_key=settings.groq_central_api_key)
         self.system_prompt = build_system_prompt()
         self.model = "llama-3.3-70b-versatile"
         
