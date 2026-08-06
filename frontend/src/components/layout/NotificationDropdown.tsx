@@ -48,8 +48,8 @@ export function NotificationDropdown({ unreadCount, onCountChange }: Notificatio
     try {
       const res = await api.get("/api/v1/notifications", { params: { limit: 20 } });
       setNotifications(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch notifications", err);
+    } catch {
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
