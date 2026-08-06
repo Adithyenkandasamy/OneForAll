@@ -194,10 +194,12 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         return [TextContent(type="text", text=json.dumps(counts, indent=2))]
 
     elif name == "get_low_stock":
-        if "qty" not in data.columns or "reorder" not in data.columns:
-            return [TextContent(type="text", text=json.dumps({"error": "Missing qty or reorder columns"}))]
-        data["qty_num"] = pd.to_numeric(data["qty"], errors="coerce")
-        data["reorder_num"] = pd.to_numeric(data["reorder"], errors="coerce")
+        qty_col = next((c for c in data.columns if c.lower() in ("qty", "quantity", "current_stock")), None)
+        reorder_col = next((c for c in data.columns if c.lower() in ("reorder", "min", "minimum_stock", "threshold")), None)
+        if not qty_col or not reorder_col:
+            return [TextContent(type="text", text=json.dumps({"error": f"Missing quantity or threshold column. Available: {list(data.columns)}"}))]
+        data["qty_num"] = pd.to_numeric(data[qty_col], errors="coerce")
+        data["reorder_num"] = pd.to_numeric(data[reorder_col], errors="coerce")
         low = data[data["qty_num"] <= data["reorder_num"]]
         return [TextContent(type="text", text=low.drop(columns=["qty_num", "reorder_num"]).to_json(orient="records"))]
 

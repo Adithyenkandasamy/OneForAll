@@ -1,27 +1,16 @@
 """Typed MCP client wrapping a session to one configured server.
 
-The rest of the platform interacts with Google Sheets ONLY through this
-client. The agent-facing abstraction lives in ``app/shared/agents``.
-
-NOTE ON ISOLATION: mcp<2's ``stdio_client`` has a teardown bug that exits
-anyio cancel scopes from the wrong task. Running inside a live request (e.g.
-uvicorn) this cancels the request task itself, turning a failed MCP call into
-a 500. Every session therefore runs in its OWN event loop on a worker thread,
-so that corruption is fully contained and a failed call surfaces as a clean
-``McpUnavailableError`` (503).
+Maintains a single persistent connection to the MCP server via a background thread
+to avoid the overhead and teardown bugs of spinning up a subprocess on every poll.
 """
 
 from __future__ import annotations
 
 import asyncio
 import json
-from collections.abc import Awaitable, Callable
-from concurrent.futures import ThreadPoolExecutor
-from typing import Any, TypeVar
+import threading
+from typing import Any
 
-from anyio import get_cancelled_exc_class
-# pyrefly: ignore [missing-import]
-from exceptiongroup import BaseExceptionGroup
 from mcp import ClientSession
 
 from app.core.exceptions import McpUnavailableError
@@ -31,95 +20,89 @@ from app.shared.mcp.transport import connect_server
 
 logger = get_logger(__name__)
 
-T = TypeVar("T")
-
-_SessionFn = Callable[[ClientSession], Awaitable[T]]
-
-_EXECUTOR = ThreadPoolExecutor(max_workers=4, thread_name_prefix="mcp")
-
-
-def _as_unavailable(error: BaseException) -> McpUnavailableError:
-    if isinstance(error, McpUnavailableError):
-        return error
-    return McpUnavailableError(f"MCP server unreachable: {_describe(error)}")
+# Singleton global state
+_sessions: dict[str, ClientSession] = {}
+_loops: dict[str, asyncio.AbstractEventLoop] = {}
+_threads: dict[str, threading.Thread] = {}
+_lock = threading.Lock()
 
 
 def _describe(exc: BaseException) -> str:
-    """Flatten exception groups/causes into a readable one-line message."""
     message = str(exc).strip()
-    if isinstance(exc, BaseExceptionGroup) and exc.exceptions:
-        inner = _describe(exc.exceptions[0])
-        return f"{message}: {inner}" if message else inner
     return message or type(exc).__name__
 
 
-async def _session_body(server: dict[str, Any], fn: _SessionFn[T]) -> T:
-    error: BaseException | None = None
+def _run_background_loop(server_url: str, server: dict[str, Any]):
+    """Runs a dedicated event loop in a background thread for a long-lived MCP session."""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    _loops[server_url] = loop
+
+    async def _runner():
+        try:
+            async for read, write in connect_server(server):
+                async with ClientSession(read, write) as session:
+                    await session.initialize()
+                    _sessions[server_url] = session
+                    
+                    # Keep the session alive indefinitely until the loop stops
+                    stop_event = asyncio.Event()
+                    await stop_event.wait()
+        except Exception as e:
+            logger.error("Background MCP loop crashed", extra={"error": str(e)})
+
     try:
-        async for read, write in connect_server(server):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                try:
-                    return await fn(session)
-                except BaseException as exc:  # capture before transport teardown
-                    error = exc
-                    raise
-    except McpUnavailableError:
-        raise
-    except get_cancelled_exc_class():  # type: ignore[call-overload]
-        raise
-    except BaseException as exc:
-        # Any transport/teardown noise (cancel-scope bug, exception groups from
-        # the stdio TaskGroup, server-side errors) becomes a clean 503. The
-        # original tool-call error, when present, is preserved as the cause.
-        if error is not None:
-            raise _as_unavailable(error) from exc
-        logger.warning(
-            "MCP session failed",
-            extra={"server": server.get("url") or server.get("command"), "error": str(exc)},
-        )
-        raise _as_unavailable(exc) from exc
-    if error is not None:
-        raise _as_unavailable(error) from None
-    raise McpUnavailableError("MCP connection yielded no session")
+        loop.run_until_complete(_runner())
+    finally:
+        loop.close()
 
 
-async def _with_session(server: dict[str, Any], fn: _SessionFn[T]) -> T:
-    """Run one MCP session in its own event loop (worker thread).
-
-    mcp's stdio teardown exits anyio cancel scopes from the wrong task; inside
-    a live request this cancels the request and yields a 500. A dedicated
-    loop per call contains the corruption so failures surface as 503 instead.
-    """
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(_EXECUTOR, _run_isolated, server, fn)
-
-
-def _run_isolated(server: dict[str, Any], fn: _SessionFn[T]) -> T:
-    return asyncio.run(_session_body(server, fn))
+def _ensure_session(server: dict[str, Any]) -> tuple[ClientSession, asyncio.AbstractEventLoop]:
+    server_url = server.get("url") or server.get("command") or "default"
+    
+    with _lock:
+        if server_url in _sessions and server_url in _loops:
+            return _sessions[server_url], _loops[server_url]
+        
+        if server_url not in _threads:
+            t = threading.Thread(target=_run_background_loop, args=(server_url, server), daemon=True)
+            t.start()
+            _threads[server_url] = t
+            
+    # Wait for the session to initialize
+    import time
+    for _ in range(50):
+        if server_url in _sessions:
+            return _sessions[server_url], _loops[server_url]
+        time.sleep(0.1)
+        
+    raise McpUnavailableError("Failed to initialize background MCP session in time")
 
 
 async def list_tools(server: dict[str, Any]) -> list[ToolDefinition]:
-    async def _list(session: ClientSession) -> list[ToolDefinition]:
-        result = await session.list_tools()
-        return [
-            ToolDefinition(
-                name=tool.name,
-                description=tool.description or "",
-                input_schema=tool.inputSchema or {"type": "object", "properties": {}},
-            )
-            for tool in result.tools
-        ]
-
-    return await _with_session(server, _list)
+    session, loop = _ensure_session(server)
+    
+    # Use loop.run_coroutine_threadsafe to interact with the background loop
+    future = asyncio.run_coroutine_threadsafe(session.list_tools(), loop)
+    result = await asyncio.wrap_future(future)
+    
+    return [
+        ToolDefinition(
+            name=tool.name,
+            description=tool.description or "",
+            input_schema=tool.inputSchema or {"type": "object", "properties": {}},
+        )
+        for tool in result.tools
+    ]
 
 
 async def call_tool(server: dict[str, Any], name: str, arguments: dict[str, Any]) -> Any:
-    async def _call(session: ClientSession) -> Any:
-        result = await session.call_tool(name, arguments=arguments)
-        return _extract_text(result)
-
-    return await _with_session(server, _call)
+    session, loop = _ensure_session(server)
+    
+    future = asyncio.run_coroutine_threadsafe(session.call_tool(name, arguments=arguments), loop)
+    result = await asyncio.wrap_future(future)
+    
+    return _extract_text(result)
 
 
 def _extract_text(result: Any) -> Any:

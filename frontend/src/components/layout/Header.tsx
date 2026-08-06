@@ -1,8 +1,30 @@
-import { Search, Bell, Menu } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, Menu } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import api from "@/lib/api";
+import { NotificationDropdown } from "./NotificationDropdown";
 
 export function Header() {
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const checkUnread = async () => {
+      try {
+        const res = await api.get("/api/v1/notifications", {
+          params: { unread_only: true, limit: 100 },
+        });
+        setUnreadCount((res.data || []).length);
+      } catch (err) {
+        // Silent fail for background poller
+      }
+    };
+
+    checkUnread();
+    const interval = setInterval(checkUnread, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <header className="h-16 border-b bg-white flex items-center justify-between px-6 shrink-0">
       <div className="flex items-center gap-4">
@@ -18,13 +40,10 @@ export function Header() {
           />
         </div>
       </div>
-      
-      <div className="flex items-center gap-4">
-        <button className="relative text-gray-600 hover:text-black transition-colors">
-          <Bell className="h-5 w-5" />
-          <span className="absolute 0 right-0 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
-        </button>
-        <div className="h-8 w-px bg-gray-200 mx-2" />
+
+      <div className="flex items-center gap-2">
+        <NotificationDropdown unreadCount={unreadCount} onCountChange={setUnreadCount} />
+        <div className="h-8 w-px bg-gray-200 mx-1" />
         <Avatar className="h-8 w-8 cursor-pointer">
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>AD</AvatarFallback>

@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { FloatingInventoryChat } from "@/components/inventory/FloatingInventoryChat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -36,23 +37,30 @@ export default function EditableInventoryPage() {
   const [updating, setUpdating] = useState(false);
 
   // Fetch Inventory Data
-  const loadInventory = async () => {
+  const loadInventory = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       setError(null);
       // Valid minimum length query string that matches actual Material IDs to prevent 422
       const res = await api.get("/api/v1/agents/inventory/materials");
       setInventory(res.data || []);
     } catch (err: any) {
       console.error("Failed to load inventory:", err);
-      setError("Failed to stream Google Sheets MCP data.");
+      if (!isSilent) setError("Failed to stream Google Sheets MCP data.");
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadInventory();
+
+    // Ultra real-time sync polling every 2 seconds
+    const intervalId = setInterval(() => {
+      loadInventory(true);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const startEdit = (item: InventoryItem, column: string, currentValue: any) => {
@@ -76,10 +84,10 @@ export default function EditableInventoryPage() {
       setInventory(prev => prev.map(item => {
         if (item.sku === sku) {
           if (editingCell.column === 'current_stock') {
-            return { ...item, quantity: Number(editValue) };
+            return { ...item, current_stock: Number(editValue) };
           }
           if (editingCell.column === 'ai_risk_level') {
-            return { ...item, status: editValue };
+            return { ...item, risk_level: editValue };
           }
         }
         return item;
@@ -126,10 +134,7 @@ export default function EditableInventoryPage() {
           <h1 className="text-3xl font-bold tracking-tight">Inventory Data Management</h1>
           <p className="text-muted-foreground mt-1">Direct read/write access to Google Sheets via MCP.</p>
         </div>
-        <Button variant="outline" onClick={loadInventory} disabled={loading || updating}>
-          {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2 text-indigo-500" />}
-          Sync Master Sheet
-        </Button>
+
       </div>
 
       {error && (
@@ -262,9 +267,11 @@ export default function EditableInventoryPage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={getStatusColor(item.risk_level)}>
+                          <Button
+                            onClick={() => loadInventory(false)}
+                            variant="outline" className={getStatusColor(item.risk_level)}>
                             {item.risk_level}
-                          </Badge>
+                          </Button>
                           <Edit2 className="w-3 h-3 text-transparent group-hover:text-muted-foreground/30 transition-colors" />
                         </div>
                       )}
@@ -283,6 +290,7 @@ export default function EditableInventoryPage() {
           )}
         </div>
       </Card>
+      <FloatingInventoryChat />
     </div>
   );
 }

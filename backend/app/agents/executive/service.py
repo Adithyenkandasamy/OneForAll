@@ -101,7 +101,13 @@ class ExecutiveService:
             for call in response.tool_calls:
                 tool_calls_used += 1
                 try:
-                    result = await self._gateway.call_tool(call.name, call.arguments)
+                    args = call.arguments
+                    if isinstance(args, str):
+                        try:
+                            args = json.loads(args)
+                        except json.JSONDecodeError:
+                            args = {}
+                    result = await self._gateway.call_tool(call.name, args)
                     result_text = str(result)
                 except Exception as exc:
                     logger.warning("Tool call failed", extra={"tool": call.name, "error": str(exc)})

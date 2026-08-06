@@ -13,7 +13,7 @@ from typing import Any
 class CacheService:
     """Simple TTL cache for inventory sheet data."""
 
-    DEFAULT_TTL_SECONDS: int = 120  # 2 minutes
+    DEFAULT_TTL_SECONDS: int = 1 # 5 seconds
 
     def __init__(self, ttl_seconds: int | None = None) -> None:
         self._ttl = ttl_seconds or self.DEFAULT_TTL_SECONDS
