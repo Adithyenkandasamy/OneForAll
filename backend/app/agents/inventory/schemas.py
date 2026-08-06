@@ -42,3 +42,64 @@ class InventoryUpdateResponse(BaseModel):
     sku: str
     column: str
     value: str
+
+
+# ── Enriched DTOs (Phase 2 — deterministic engine outputs) ──
+
+
+class MaterialAnalysisDTO(BaseModel):
+    sku: str
+    name: str
+    current_stock: int
+    minimum_stock: int
+    daily_consumption: int
+    supplier: str
+    risk_level: str
+    days_remaining: float | None
+    reorder_required: bool
+    stockout_detected: bool
+    overstock_detected: bool
+    consumption_status: str
+    priority: str
+
+
+class InventoryHealthDTO(BaseModel):
+    total_materials: int
+    safe_count: int
+    high_risk_count: int
+    medium_risk_count: int
+    low_risk_count: int
+    overstock_count: int
+    stockout_count: int
+    critical_count: int
+    reorder_count: int
+    health_score: float
+    risk_distribution: dict[str, int]
+
+
+class AnalyticsDTO(BaseModel):
+    fast_moving: list[dict]
+    slow_moving: list[dict]
+    dead_stock: list[dict]
+    supplier_stats: dict[str, int]
+    top_critical: list[dict]
+    abc_analysis: dict[str, list[dict]]
+    consumption_summary: dict[str, int]
+
+
+class DashboardDTO(BaseModel):
+    health: InventoryHealthDTO
+    top_critical: list[MaterialAnalysisDTO]
+    risk_distribution: dict[str, int]
+    supplier_stats: dict[str, int]
+
+
+class ReportDTO(BaseModel):
+    report_type: str
+    generated_at: str
+    health: dict
+    total_materials: int
+    high_risk_materials: list[dict]
+    reorder_list: list[dict]
+    stockout_list: list[dict]
+    overstock_list: list[dict]
