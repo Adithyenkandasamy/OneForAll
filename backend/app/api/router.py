@@ -23,8 +23,10 @@ def include_agent_routers(root: APIRouter, prefix: str) -> None:
     ``app/shared``) are wired only when the app is assembled.
     """
     from app.agents.inventory.router import router as inventory_router
+    from app.agents.executive.router import router as executive_router
 
     root.include_router(inventory_router, prefix=prefix)
+    root.include_router(executive_router, prefix=prefix)
 
 
 def include_agents_catalog(root: APIRouter, prefix: str) -> None:
@@ -32,7 +34,8 @@ def include_agents_catalog(root: APIRouter, prefix: str) -> None:
 
     from fastapi import APIRouter as _Router
 
-    from app.agents import inventory as _inventory  # noqa: F401  (registers catalog entry)
+    from app.agents import inventory as _inventory  # noqa: F401
+    from app.agents import executive as _executive  # noqa: F401
     from app.shared.agents.registry import list_agents
 
     catalog = _Router(prefix="/agents", tags=["agents"])

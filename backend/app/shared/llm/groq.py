@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 class GroqProvider(LLMProvider):
     def __init__(self, *, api_key: str | None = None, model: str | None = None) -> None:
-        self._client = groq.AsyncGroq(api_key=api_key or settings.groq_api_key)
+        self._client = groq.AsyncGroq(api_key=api_key or settings.GROQ_API_KEY_INVENTORY)
         self._model = model or settings.groq_model
 
     async def complete(

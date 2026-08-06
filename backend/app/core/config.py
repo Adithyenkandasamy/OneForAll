@@ -33,7 +33,8 @@ class Settings(BaseSettings):
 
     database_url: str = ""
 
-    groq_api_key: str = ""
+    GROQ_API_KEY_INVENTORY: str = ""
+    groq_central_api_key: str = ""
     groq_model: str = "llama-3.3-70b-versatile"
     llm_max_iterations: int = 10
     llm_max_tokens: int = 2048

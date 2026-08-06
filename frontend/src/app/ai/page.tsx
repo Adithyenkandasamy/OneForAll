@@ -49,8 +49,8 @@ export default function CentralAIPage() {
 
         try {
             // Temporarily routing to generic inventory bot.
-            // In a full production rollout, this points to `/api/v1/agents/central/chat` powered by GROQ_CENTRAL orchestration.
-            const res = await api.post("/api/v1/agents/inventory/chat", {
+            // In a full production rollout, this points to `/api/v1/agents/executive/chat` powered by GROQ_CENTRAL orchestration.
+            const res = await api.post("/api/v1/agents/executive/chat", {
                 query: userQuery,
                 conversation_id: "central-dashboard-session"
             });
@@ -125,8 +125,8 @@ export default function CentralAIPage() {
 
                                     <div className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                         <div className={`text-sm px-4 py-3 shadow-md ${msg.role === 'user'
-                                                ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm'
-                                                : 'bg-card rounded-2xl rounded-tl-sm border border-border leading-relaxed text-card-foreground'
+                                            ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm'
+                                            : 'bg-card rounded-2xl rounded-tl-sm border border-border leading-relaxed text-card-foreground'
                                             }`}>
                                             {msg.content}
                                         </div>
