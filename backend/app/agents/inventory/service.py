@@ -19,7 +19,7 @@ from app.agents.inventory.schemas import InventoryItemDTO, MaterialAnalysisDTO
 from app.agents.inventory.services.analytics_engine import AnalyticsEngine
 from app.agents.inventory.services.cache_service import CacheService
 from app.agents.inventory.services.health_engine import HealthEngine
-from app.agents.inventory.services.notification_service import InventoryNotificationService
+from app.shared.events import bus
 from app.agents.inventory.services.report_service import ReportService
 from app.agents.inventory.services.rule_engine import RuleEngine
 from app.core.logging import get_logger
@@ -42,7 +42,6 @@ class InventoryService:
         health_engine: HealthEngine | None = None,
         analytics_engine: AnalyticsEngine | None = None,
         report_service: ReportService | None = None,
-        notification_service: InventoryNotificationService | None = None,
         cache: CacheService | None = None,
     ) -> None:
         self._agent = agent
@@ -51,7 +50,6 @@ class InventoryService:
         self._health_engine = health_engine or HealthEngine()
         self._analytics_engine = analytics_engine or AnalyticsEngine()
         self._report_service = report_service or ReportService()
-        self._notification_service = notification_service or InventoryNotificationService()
         self._cache = cache or CacheService()
 
     # ── Raw MCP data access ──
@@ -109,11 +107,11 @@ class InventoryService:
         )
         result = await self._agent.run(enriched_query, ctx)
 
-        # Step 4: Emit notifications for critical events (not the AI's job)
-        try:
-            await self._notification_service.check_and_notify(analyses, user_id=user_id)
-        except Exception as exc:
-            logger.warning("Notification emission failed", extra={"error": str(exc)})
+        # Step 4: Publish domain event to the Internal Event Bus
+        await bus.publish(
+            "inventory:analyzed", 
+            {"analyses": analyses, "user_id": user_id}
+        )
 
         return {
             "content": result.content,

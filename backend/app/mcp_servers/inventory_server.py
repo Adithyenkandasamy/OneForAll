@@ -38,15 +38,15 @@ df: pd.DataFrame | None = None
 
 def _load_data() -> pd.DataFrame:
     global df
-    if df is None:
-        records = ws.get_all_records()
-        df = pd.DataFrame(records)
-        df.columns = (
-            df.columns.str.strip()
-            .str.lower()
-            .str.replace(" ", "_")
-            .str.replace("-", "_")
-        )
+    # ALWAYS fetch fresh records since this acts as a real-time gateway!
+    records = ws.get_all_records()
+    df = pd.DataFrame(records)
+    df.columns = (
+        df.columns.str.strip()
+        .str.lower()
+        .str.replace(" ", "_")
+        .str.replace("-", "_")
+    )
     return df
 
 

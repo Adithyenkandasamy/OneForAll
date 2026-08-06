@@ -117,3 +117,4 @@ async def enriched_materials(
     service: InventoryService = Depends(get_inventory_service),
 ) -> list[dict]:
     return await service.get_enriched_materials()
+

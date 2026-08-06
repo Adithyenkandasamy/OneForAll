@@ -1,59 +1,105 @@
 """Executive Orchestrator service layer.
 
-Connects to inventory MCP tools for real data access.
-Prevents hallucination by requiring tool usage for factual claims.
+Connects to domain services (e.g. InventoryService) instead of raw DBs/MCPs.
+Adheres to Modular Monolith boundaries.
 """
 
 from __future__ import annotations
 
 import json
+from inspect import iscoroutinefunction
 
 from app.core.logging import get_logger
 from app.core.config import settings
-from app.agents.inventory.mcp_tools import SheetsMcpGateway
 from app.shared.llm.groq import GroqProvider
 from app.shared.llm.base import ToolDefinition
+
+from app.agents.inventory.service import InventoryService
+from app.agents.inventory.mcp_tools import SheetsMcpGateway
 
 logger = get_logger(__name__)
 
 SYSTEM_PROMPT = """\
-You are the OneForAll Central AI Orchestrator for a manufacturing company.
+You are Orvixo, the Central Executive AI Orchestrator for this Manufacturing Intelligence Platform.
 
-CRITICAL RULES - READ CAREFULLY:
-1. NEVER, EVER make up or fabricate ANY data. Every single number, product name, \
-stock level, supplier name, or metric MUST come from a tool call result.
-2. You have NO knowledge of this company's inventory. You MUST use tools to \
-get any information.
-3. If a tool call fails or returns an error, say "I cannot retrieve that data \
-right now" - do NOT guess.
-4. When asked about inventory, ALWAYS call get_sheet_data or search_materials first.
-5. When asked about stock levels, ALWAYS call get_low_stock or query_inventory.
-6. If you don't have a tool for something, say "I don't have access to that data" \
-instead of making something up.
-7. Never provide percentages, dollar values, or metrics unless they come directly \
-from a tool result.
-8. Address the user professionally. You are an AI assistant with real-time \
-access to factory inventory data through MCP tools.
+CRITICAL RULES:
+1. NEVER fabricate data. All metrics, health scores, and stock levels MUST come from your tools.
+2. You do not calculate risk, days remaining, or health yourself. The backend rule engines pre-compute these. Your job is to EXPLAIN them intelligently.
+3. Be concise, strategic, and professional. Do not just dump raw JSON arrays back to the user. Synthesize the data into actionable business intelligence.
+4. If the user asks about the overall status, query the dashboard or health tools, then provide a high-level executive summary. Only list specific materials if they are critical or requested.
+5. Use markdown formatting intelligently (bolding key numbers).
 """
-
 
 class ExecutiveService:
     def __init__(self) -> None:
-        self._gateway = SheetsMcpGateway()
         self._llm = GroqProvider(api_key=settings.groq_central_api_key)
+        # In a true modular monolith, we access other bounding contexts through their service layer
+        # Eventually we would inject this via a Dependency Container
+        self._inventory_service = InventoryService(
+            agent=None,  # Executive doesn't use the inventory local agent
+            gateway=SheetsMcpGateway()
+        )
+
+    def _get_domain_tools(self) -> list[ToolDefinition]:
+        return [
+            ToolDefinition(
+                name="get_inventory_health",
+                description="Get the current overall inventory health score and risk distribution.",
+                input_schema={"type": "object", "properties": {}}
+            ),
+            ToolDefinition(
+                name="get_inventory_dashboard",
+                description="Get the top critical materials, supplier stats, and health overview.",
+                input_schema={"type": "object", "properties": {}}
+            ),
+            ToolDefinition(
+                name="get_inventory_analytics",
+                description="Get detailed ABC analysis, dead stock, and fast/slow movers.",
+                input_schema={"type": "object", "properties": {}}
+            ),
+            ToolDefinition(
+                name="search_inventory_materials",
+                description="Search for specific materials or get all materials if query is empty.",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "Search term (e.g. MAT). Leave empty for all."}
+                    }
+                }
+            )
+        ]
+
+    async def _execute_tool(self, name: str, args: dict) -> str:
+        try:
+            if name == "get_inventory_health":
+                res = await self._inventory_service.get_health()
+            elif name == "get_inventory_dashboard":
+                res = await self._inventory_service.get_dashboard()
+            elif name == "get_inventory_analytics":
+                res = await self._inventory_service.get_analytics()
+            elif name == "search_inventory_materials":
+                q = args.get("query", "MAT")
+                # Need to use the raw enriched fetch if they just want everything
+                if not q:
+                    res = await self._inventory_service.get_enriched_materials()
+                else:
+                    res = await self._inventory_service.get_enriched_materials()
+                    # simplistic filter
+                    q = q.lower()
+                    res = [m for m in res if q in str(m.get("material_id", "")).lower() or q in str(m.get("material", "")).lower()]
+            else:
+                return f"ERROR: Unknown tool {name}"
+            
+            return json.dumps(res, default=str)
+        except Exception as e:
+            logger.error("Domain tool execution failed", extra={"tool": name, "error": str(e)})
+            return f"ERROR executing {name}: {str(e)}"
 
     async def answer(
         self, query: str, *, user_id: str, role: str, conversation_id: str | None
     ) -> dict:
-        from app.shared.mcp import client as mcp_client
-
-        # Get available tools from MCP server
-        try:
-            server = self._gateway._resolve_server()
-            tools = await mcp_client.list_tools(server)
-        except Exception as exc:
-            logger.warning("Failed to list MCP tools", extra={"error": str(exc)})
-            tools = []
+        
+        tools = self._get_domain_tools()
 
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -61,14 +107,14 @@ class ExecutiveService:
         ]
 
         tool_calls_used = 0
-        max_iterations = 10
+        max_iterations = 6
 
         for _ in range(max_iterations):
             response = await self._llm.complete(
                 messages=messages,
-                tools=tools if tools else None,
+                tools=tools,
                 max_tokens=2048,
-                temperature=0.1,
+                temperature=0.3,
             )
 
             # If no tool calls, return the final answer
@@ -81,7 +127,7 @@ class ExecutiveService:
                     "conversation_id": conversation_id,
                 }
 
-            # Execute tool calls
+            # Add AI's function dispatch to history
             messages.append({
                 "role": "assistant",
                 "content": response.content,
@@ -98,20 +144,17 @@ class ExecutiveService:
                 ],
             })
 
+            # Execute tools
             for call in response.tool_calls:
                 tool_calls_used += 1
-                try:
-                    args = call.arguments
-                    if isinstance(args, str):
-                        try:
-                            args = json.loads(args)
-                        except json.JSONDecodeError:
-                            args = {}
-                    result = await self._gateway.call_tool(call.name, args)
-                    result_text = str(result)
-                except Exception as exc:
-                    logger.warning("Tool call failed", extra={"tool": call.name, "error": str(exc)})
-                    result_text = f"ERROR: Tool '{call.name}' failed: {exc}"
+                args = call.arguments
+                if isinstance(args, str):
+                    try:
+                        args = json.loads(args)
+                    except json.JSONDecodeError:
+                        args = {}
+                
+                result_text = await self._execute_tool(call.name, args)
 
                 messages.append({
                     "role": "tool",

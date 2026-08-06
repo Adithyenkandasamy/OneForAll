@@ -54,13 +54,10 @@ export default function EditableInventoryPage() {
 
   useEffect(() => {
     loadInventory();
-
-    // Ultra real-time sync polling every 2 seconds
-    const intervalId = setInterval(() => {
+    const interval = setInterval(() => {
       loadInventory(true);
-    }, 1000);
-
-    return () => clearInterval(intervalId);
+    }, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const startEdit = (item: InventoryItem, column: string, currentValue: any) => {

@@ -1,3 +1,5 @@
+from app.shared.events import bus
+from typing import Any
 """Inventory Notification Service — domain-event-driven alerts.
 
 The Inventory AI agent NEVER sends notifications directly.
@@ -76,3 +78,12 @@ class InventoryNotificationService:
                     )
 
         return events
+
+async def _on_inventory_analyzed(payload: Any) -> None:
+    analyses = payload.get("analyses", [])
+    user_id = payload.get("user_id")
+    if analyses and user_id:
+        svc = InventoryNotificationService()
+        await svc.check_and_notify(analyses, user_id=user_id)
+
+bus.subscribe("inventory:analyzed", _on_inventory_analyzed)
