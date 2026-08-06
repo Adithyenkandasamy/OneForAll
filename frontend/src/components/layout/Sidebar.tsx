@@ -13,7 +13,8 @@ import {
   Settings,
   Users,
   LogOut,
-  UserCircle
+  UserCircle,
+  BrainCircuit
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +27,7 @@ const navItems = [
   { name: "Monitoring", href: "/monitoring", icon: Activity },
   { name: "Predictive Maint.", href: "/maintenance", icon: AlertTriangle },
   { name: "Inventory", href: "/inventory", icon: Boxes },
+  { name: "Central AI", href: "/ai", icon: BrainCircuit },
   { name: "Analytics", href: "/analytics", icon: LineChart },
   { name: "Team", href: "/team", icon: Users },
   { name: "Settings", href: "/settings", icon: Settings },

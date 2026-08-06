@@ -2,11 +2,12 @@
   "mcpServers": {
     "gsheets": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "mcp-gsheets@latest"],
+      "command": "python",
+      "args": ["-m", "app.mcp_servers.gsheets_server"],
       "env": {
-        "GOOGLE_PROJECT_ID": "${GOOGLE_PROJECT_ID}",
-        "GOOGLE_APPLICATION_CREDENTIALS": "${GOOGLE_APPLICATION_CREDENTIALS}"
+        "GOOGLE_APPLICATION_CREDENTIALS": "${GOOGLE_APPLICATION_CREDENTIALS}",
+        "SHEETS_SPREADSHEET_ID": "${SHEETS_SPREADSHEET_ID}",
+        "SHEETS_RANGE": "${SHEETS_RANGE}"
       }
     }
   }
