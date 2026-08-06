@@ -19,9 +19,9 @@ import { Package, AlertCircle, Loader2, Sparkles, ServerCrash, Edit2 } from "luc
 interface InventoryItem {
   sku: string;
   name: string;
-  quantity: number;
-  threshold: number;
-  status: string;
+  current_stock: number;
+  minimum_stock: number;
+  risk_level: string;
   supplier: string;
 }
 
@@ -106,16 +106,16 @@ export default function EditableInventoryPage() {
   };
 
   const getStatusColor = (status: string) => {
-    const s = status.toLowerCase();
-    if (s.includes("healthy") || s.includes("in stock")) return "bg-green-500/10 text-green-700 border-green-500/20";
-    if (s.includes("low")) return "bg-amber-500/10 text-amber-700 border-amber-500/20";
-    if (s.includes("critical") || s.includes("out")) return "bg-red-500/10 text-red-700 border-red-500/20";
+    const s = (status || "").toLowerCase();
+    if (s.includes("low") || s.includes("healthy") || s.includes("in stock")) return "bg-green-500/10 text-green-700 border-green-500/20";
+    if (s.includes("medium")) return "bg-amber-500/10 text-amber-700 border-amber-500/20";
+    if (s.includes("high") || s.includes("critical") || s.includes("out")) return "bg-red-500/10 text-red-700 border-red-500/20";
     return "bg-gray-500/10 text-gray-700 border-gray-500/20";
   };
 
   const criticalItems = inventory.filter(i => {
-    const s = i.risk_level.toLowerCase();
-    return s.includes("critical") || s.includes("low") || i.current_stock <= i.minimum_stock;
+    const s = (i.risk_level || "").toLowerCase();
+    return s.includes("critical") || s.includes("high") || i.current_stock <= i.minimum_stock;
   });
 
   return (
