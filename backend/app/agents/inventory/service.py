@@ -28,7 +28,8 @@ logger = get_logger(__name__)
 
 WRITE_ROLES = {"operator", "admin"}
 WRITABLE_COLUMNS = ("qty", "quantity", "stock", "name", "reorder", "status",
-                    "Current Stock", "Minimum Stock", "AI Risk Level")
+                    "Current Stock", "Minimum Stock", "AI Risk Level",
+                    "current_stock", "ai_risk_level", "minimum_stock")
 
 
 class InventoryService:

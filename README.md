@@ -1,6 +1,6 @@
 # 📌 Project Title
 
-**Orvixo AI – Inventory Intelligence Service**
+**OneForAll AI – Inventory Intelligence Service**
 
 ---
 

@@ -21,7 +21,7 @@ export default function CentralAIPage() {
         {
             id: "intro",
             role: "ai",
-            content: "Hello! I am Orvixo Central AI. I natively orchestrate and control all modular microservices including Inventory, Production, and Team Management. How can I assist you today?"
+            content: "Hello! I am OneForAll Central AI. I natively orchestrate and control all modular microservices including Inventory, Production, and Team Management. How can I assist you today?"
         }
     ]);
     const [chatLoading, setChatLoading] = useState(false);
@@ -102,7 +102,7 @@ export default function CentralAIPage() {
                             <div className="p-1.5 rounded-md bg-indigo-500/20 text-indigo-500">
                                 <Bot className="h-5 w-5" />
                             </div>
-                            Orvixo Master Orchestrator
+                            OneForAll Master Orchestrator
                         </CardTitle>
                         <CardDescription className="text-xs">
                             Direct access interface to the global ecosystem.

@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="root@oneforall.sys"
+                                    placeholder="root@OneForAll .sys"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required

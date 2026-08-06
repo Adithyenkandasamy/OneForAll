@@ -41,8 +41,8 @@ export default function EditableInventoryPage() {
       setLoading(true);
       setError(null);
       // Valid minimum length query string that matches actual Material IDs to prevent 422
-      const res = await api.get("/api/v1/agents/inventory/search?q=MAT&limit=50");
-      setInventory(res.data.items || []);
+      const res = await api.get("/api/v1/agents/inventory/materials");
+      setInventory(res.data || []);
     } catch (err: any) {
       console.error("Failed to load inventory:", err);
       setError("Failed to stream Google Sheets MCP data.");
@@ -75,10 +75,10 @@ export default function EditableInventoryPage() {
       // Optimistic update in UI
       setInventory(prev => prev.map(item => {
         if (item.sku === sku) {
-          if (editingCell.column === 'Current Stock') {
+          if (editingCell.column === 'current_stock') {
             return { ...item, quantity: Number(editValue) };
           }
-          if (editingCell.column === 'AI Risk Level') {
+          if (editingCell.column === 'ai_risk_level') {
             return { ...item, status: editValue };
           }
         }
@@ -114,8 +114,8 @@ export default function EditableInventoryPage() {
   };
 
   const criticalItems = inventory.filter(i => {
-    const s = i.status.toLowerCase();
-    return s.includes("critical") || s.includes("low") || i.quantity <= i.threshold;
+    const s = i.risk_level.toLowerCase();
+    return s.includes("critical") || s.includes("low") || i.current_stock <= i.minimum_stock;
   });
 
   return (
@@ -158,8 +158,8 @@ export default function EditableInventoryPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">SKU: {item.sku}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-bold text-red-500">{item.quantity}</span>
-                  <p className="text-[10px] uppercase tracking-wider text-red-500/70 font-semibold">{item.status}</p>
+                  <span className="text-lg font-bold text-red-500">{item.current_stock}</span>
+                  <p className="text-[10px] uppercase tracking-wider text-red-500/70 font-semibold">{item.risk_level}</p>
                 </div>
               </div>
             ))}
@@ -212,9 +212,9 @@ export default function EditableInventoryPage() {
                     {/* Editable Quantity */}
                     <TableCell
                       className="align-middle cursor-pointer hover:bg-muted/40 transition-colors"
-                      onDoubleClick={() => startEdit(item, "Current Stock", item.quantity)}
+                      onDoubleClick={() => startEdit(item, "current_stock", item.current_stock)}
                     >
-                      {editingCell?.sku === item.sku && editingCell.column === "Current Stock" ? (
+                      {editingCell?.sku === item.sku && editingCell.column === "current_stock" ? (
                         <div className="flex items-center gap-2">
                           <Input
                             autoFocus
@@ -231,8 +231,8 @@ export default function EditableInventoryPage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <span className={`font-semibold ${item.quantity <= item.threshold ? 'text-red-500' : ''}`}>
-                            {item.quantity}
+                          <span className={`font-semibold ${item.current_stock <= item.minimum_stock ? 'text-red-500' : ''}`}>
+                            {item.current_stock}
                           </span>
                           <Edit2 className="w-3 h-3 text-transparent group-hover:text-muted-foreground/30 transition-colors" />
                         </div>
@@ -240,15 +240,15 @@ export default function EditableInventoryPage() {
                     </TableCell>
 
                     <TableCell className="text-muted-foreground align-middle">
-                      {item.threshold}
+                      {item.minimum_stock}
                     </TableCell>
 
                     {/* Editable Status */}
                     <TableCell
                       className="align-middle cursor-pointer hover:bg-muted/40 transition-colors"
-                      onDoubleClick={() => startEdit(item, "AI Risk Level", item.status)}
+                      onDoubleClick={() => startEdit(item, "ai_risk_level", item.risk_level)}
                     >
-                      {editingCell?.sku === item.sku && editingCell.column === "AI Risk Level" ? (
+                      {editingCell?.sku === item.sku && editingCell.column === "ai_risk_level" ? (
                         <div className="flex items-center gap-2">
                           <Input
                             autoFocus
@@ -262,8 +262,8 @@ export default function EditableInventoryPage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={getStatusColor(item.status)}>
-                            {item.status}
+                          <Badge variant="outline" className={getStatusColor(item.risk_level)}>
+                            {item.risk_level}
                           </Badge>
                           <Edit2 className="w-3 h-3 text-transparent group-hover:text-muted-foreground/30 transition-colors" />
                         </div>

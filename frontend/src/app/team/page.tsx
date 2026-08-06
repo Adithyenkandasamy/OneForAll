@@ -6,10 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, Phone } from "lucide-react";
 
 const teamData = [
-  { name: "Sarah Connor", role: "Plant Manager", status: "Active", email: "sarah@oneforall.com" },
-  { name: "John Smith", role: "Lead Engineer", status: "Active", email: "john@oneforall.com" },
-  { name: "Elena Rodriguez", role: "Maintenance Supervisor", status: "On Leave", email: "elena@oneforall.com" },
-  { name: "David Kim", role: "Robotics Technician", status: "Active", email: "david@oneforall.com" },
+  { name: "Sarah Connor", role: "Plant Manager", status: "Active", email: "sarah@OneForAll .com" },
+  { name: "John Smith", role: "Lead Engineer", status: "Active", email: "john@OneForAll .com" },
+  { name: "Elena Rodriguez", role: "Maintenance Supervisor", status: "On Leave", email: "elena@OneForAll .com" },
+  { name: "David Kim", role: "Robotics Technician", status: "Active", email: "david@OneForAll .com" },
 ];
 
 export default function TeamPage() {

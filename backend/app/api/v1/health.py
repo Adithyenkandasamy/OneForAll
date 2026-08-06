@@ -9,4 +9,4 @@ router = APIRouter(tags=["health"])
 
 @router.get("/health")
 async def health() -> dict[str, str]:
-    return {"status": "ok", "service": "oneforall-backend"}
+    return {"status": "ok", "service": "OneForAll -backend"}

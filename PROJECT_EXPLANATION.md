@@ -1,8 +1,8 @@
-# Orvixo AI (OneForAll) - Project Explanation
+# OneForAll AI (OneForAll ) - Project Explanation
 
 ## Overview
 
-**Orvixo AI** is an AI-powered **Manufacturing Intelligence Platform** that transforms traditional Google Sheets-based inventory management into an intelligent assistant. Users ask natural-language questions about factory inventory and get AI-generated analysis, risk detection, and reorder recommendations.
+**OneForAll AI** is an AI-powered **Manufacturing Intelligence Platform** that transforms traditional Google Sheets-based inventory management into an intelligent assistant. Users ask natural-language questions about factory inventory and get AI-generated analysis, risk detection, and reorder recommendations.
 
 ---
 
@@ -273,7 +273,7 @@ All settings from `.env` file:
 
 ## Summary
 
-Orvixo AI is a full-stack manufacturing intelligence platform that:
+OneForAll AI is a full-stack manufacturing intelligence platform that:
 
 1. **Connects to Google Sheets** via MCP protocol
 2. **Uses LLM (Llama 3.3)** for natural language understanding

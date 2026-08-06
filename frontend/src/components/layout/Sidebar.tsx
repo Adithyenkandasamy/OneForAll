@@ -40,7 +40,7 @@ export function Sidebar() {
   return (
     <aside className="w-64 border-r bg-white h-screen sticky top-0 flex flex-col hidden md:flex shrink-0">
       <div className="h-16 flex items-center px-6 border-b">
-        <div className="font-bold text-lg tracking-tight">OneForAll AI</div>
+        <div className="font-bold text-lg tracking-tight">OneForAll  AI</div>
       </div>
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {navItems.map((item) => {
@@ -88,7 +88,7 @@ export function Sidebar() {
       )}
 
       <div className="p-4 border-t text-xs text-gray-500 text-center">
-        © 2026 OneForAll Corp.
+        © 2026 OneForAll  Corp.
       </div>
     </aside>
   );

@@ -19,9 +19,9 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    logger.info("OneForAll started", extra={"env": settings.app_env})
+    logger.info("OneForAll  started", extra={"env": settings.app_env})
     yield
-    logger.info("OneForAll stopped")
+    logger.info("OneForAll  stopped")
 
 
 def create_app() -> FastAPI:

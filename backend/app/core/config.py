@@ -18,7 +18,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "OneForAll"
+    app_name: str = "OneForAll "
     app_env: str = "development"
     debug: bool = True
     api_v1_prefix: str = "/api/v1"
