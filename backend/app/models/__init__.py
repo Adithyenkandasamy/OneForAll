@@ -6,6 +6,7 @@ from app.models.notification import Notification
 from app.models.refresh_token import RefreshToken
 from app.models.settings import AuditLog, Setting
 from app.models.user import User
+from app.agents.quality.models import SensorData, MachineStatus
 
 __all__ = [
     "User",
@@ -16,4 +17,6 @@ __all__ = [
     "Notification",
     "Setting",
     "AuditLog",
+    "SensorData",
+    "MachineStatus",
 ]

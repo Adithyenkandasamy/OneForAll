@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter
+from app.agents.quality.api.router import quality_router
 
 from app.api.v1 import auth, conversations, dashboard, health, history, notifications, users
 
@@ -27,6 +28,7 @@ def include_agent_routers(root: APIRouter, prefix: str) -> None:
 
     root.include_router(inventory_router, prefix=prefix)
     root.include_router(executive_router, prefix=prefix)
+    root.include_router(quality_router, prefix=f"{prefix}/agents/quality")
 
 
 def include_agents_catalog(root: APIRouter, prefix: str) -> None:

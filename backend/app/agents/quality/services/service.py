@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import select
-from app.database.core import async_session_maker
+from app.database.session import get_sessionmaker
 from app.agents.quality.models import MachineStatus, SensorData
 from app.agents.quality.llm.agent import QualityAgent
 
@@ -9,7 +9,7 @@ class QualityService:
         self.agent = QualityAgent()
         
     async def get_dashboard_state(self) -> dict:
-        async with async_session_maker() as session:
+        async with get_sessionmaker()() as session:
             result = await session.execute(select(MachineStatus))
             machines = result.scalars().all()
             

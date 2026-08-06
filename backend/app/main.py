@@ -20,9 +20,7 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     logger.info("OneForAll  started", extra={"env": settings.app_env})
-    polling_service_task = asyncio.create_task(polling_service.run())
     yield
-    await polling_service.stop()
     logger.info("OneForAll  stopped")
 
 

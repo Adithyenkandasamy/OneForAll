@@ -2,7 +2,7 @@ import asyncio
 import httpx
 from datetime import datetime
 from app.core.logging import get_logger
-from app.database.core import async_session_maker
+from app.database.session import get_sessionmaker
 from app.agents.quality.schemas import SensorDataDTO
 from app.agents.quality.models import SensorData, MachineStatus
 from app.agents.quality.rules.quality_engine import QualityEngine
@@ -38,7 +38,7 @@ class QualityPollingService:
         resp.raise_for_status()
         raw_rows = resp.json()
         
-        async with async_session_maker() as session:
+        async with get_sessionmaker()() as session:
             for row in raw_rows:
                 # Convert basic integer IDs from the mock into arbitrary machine clusters
                 # (E.g. id: 1 -> Machine-01)

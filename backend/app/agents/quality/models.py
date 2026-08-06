@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Float, Integer, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database.core import Base
+from app.database.base import Base
 
 class SensorData(Base):
     __tablename__ = "sensor_data"
