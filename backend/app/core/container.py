@@ -47,7 +47,15 @@ def _build_inventory_service(session: AsyncSession) -> object:
     history = HistorySinkAdapter(HistoryService(HistoryRepository(session)))
     agent = InventoryAgent(llm=llm, gateway=gateway, history=history)
     register(agent.name, agent.description, lambda: agent)
-    return InventoryService(agent=agent, gateway=gateway)
+
+    notification_service = NotificationService(
+        notifications=NotificationRepository(session)
+    )
+    return InventoryService(
+        agent=agent,
+        gateway=gateway,
+        notification_service=notification_service,
+    )
 
 
 class Container:
