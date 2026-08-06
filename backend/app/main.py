@@ -53,3 +53,4 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+\n# Force reload for Supabase IPv4

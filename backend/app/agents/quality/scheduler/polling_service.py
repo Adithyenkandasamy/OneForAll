@@ -26,7 +26,7 @@ class QualityPollingService:
                 try:
                     await self._cycle(client)
                 except Exception as e:
-                    logger.error(f"Polling cycle failed: {e}")
+                    logger.error(f"Polling cycle failed: {e}"); import traceback; open("poll_crash.log", "w").write(traceback.format_exc())
                 await asyncio.sleep(self.interval)
 
     async def stop(self):
@@ -48,7 +48,9 @@ class QualityPollingService:
                 dto = SensorDataDTO(**row)
                 
                 # 2. Persist Sensor Data History
-                db_sensor = SensorData(**dto.model_dump())
+                dumped = dto.model_dump()
+                dumped.pop("id", None)
+                db_sensor = SensorData(**dumped)
                 session.add(db_sensor)
                 
                 # 3. Deterministic Evaluation
