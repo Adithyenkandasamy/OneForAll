@@ -12,8 +12,12 @@ import {
   LineChart,
   Settings,
   Users,
+  LogOut,
+  UserCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -29,6 +33,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   return (
     <aside className="w-64 border-r bg-white h-screen sticky top-0 flex flex-col hidden md:flex shrink-0">
@@ -55,7 +60,32 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="p-4 border-t text-xs text-gray-500">
+
+      {/* User Profile & Logout section */}
+      {user && (
+        <div className="p-4 border-t flex flex-col space-y-3">
+          <div className="flex items-center gap-3 px-2">
+            <div className="bg-zinc-100 p-2 rounded-full">
+              <UserCircle className="h-5 w-5 text-zinc-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold truncate max-w-[140px] text-zinc-800">{user.full_name}</span>
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">{user.role}</span>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start text-zinc-600 hover:text-black hover:bg-zinc-100 transition-colors"
+            onClick={() => logout()}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+      )}
+
+      <div className="p-4 border-t text-xs text-gray-500 text-center">
         © 2026 OneForAll Corp.
       </div>
     </aside>

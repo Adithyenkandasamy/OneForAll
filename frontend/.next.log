@@ -52,3 +52,16 @@ https://nextjs.org/telemetry
  ✓ Compiled in 274ms
  GET /maintenance 200 in 787ms
  GET /maintenance 200 in 327ms
+ ✓ Compiled /maintenance in 183ms
+ GET /maintenance 200 in 957ms
+ GET /maintenance 200 in 1037ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 885ms
+ GET /login 200 in 1012ms
+ ✓ Compiled in 5.2s
+ GET /login 200 in 1202ms
+ ✓ Compiled in 717ms
+ ✓ Compiled in 583ms
+ GET /login 200 in 461ms
+ ✓ Compiled in 783ms
+ ✓ Compiled in 688ms
