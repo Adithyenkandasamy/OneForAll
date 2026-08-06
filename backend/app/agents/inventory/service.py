@@ -19,10 +19,10 @@ from app.agents.inventory.schemas import InventoryItemDTO, MaterialAnalysisDTO
 from app.agents.inventory.services.analytics_engine import AnalyticsEngine
 from app.agents.inventory.services.cache_service import CacheService
 from app.agents.inventory.services.health_engine import HealthEngine
-from app.shared.events import bus
-from app.agents.inventory.services.report_service import ReportService
 from app.agents.inventory.services.rule_engine import RuleEngine
+from app.agents.inventory.services.report_service import ReportService
 from app.core.logging import get_logger
+from app.services.notification_service import NotificationService
 
 logger = get_logger(__name__)
 
@@ -38,6 +38,7 @@ class InventoryService:
         agent: object,
         gateway: SheetsMcpGateway,
         *,
+        notification_service: NotificationService | None = None,
         rule_engine: RuleEngine | None = None,
         health_engine: HealthEngine | None = None,
         analytics_engine: AnalyticsEngine | None = None,
@@ -46,6 +47,7 @@ class InventoryService:
     ) -> None:
         self._agent = agent
         self._gateway = gateway
+        self._notification_service = notification_service
         self._rule_engine = rule_engine or RuleEngine()
         self._health_engine = health_engine or HealthEngine()
         self._analytics_engine = analytics_engine or AnalyticsEngine()
@@ -70,6 +72,33 @@ class InventoryService:
 
         self._cache.set(rows)
         return rows
+
+    async def _create_risk_notifications(self, analyses: list, user_id: str) -> None:
+        """Create notifications for HIGH risk materials."""
+        if self._notification_service is None:
+            return
+
+        high_risk = [a for a in analyses if a.risk_level == "HIGH"]
+        if not high_risk:
+            return
+
+        for material in high_risk:
+            kind = "stockout" if material.stockout_detected else "low_stock"
+            title = f"Stock Alert: {material.name} ({material.sku})"
+            body = (
+                f"Current stock: {material.current_stock}, "
+                f"Minimum: {material.minimum_stock}. "
+                f"{'STOCKOUT DETECTED!' if material.stockout_detected else 'Below minimum stock level.'}"
+            )
+            payload = {"link": "/inventory", "sku": material.sku, "risk_level": material.risk_level}
+
+            await self._notification_service.create(
+                user_id=user_id,
+                kind=kind,
+                title=title,
+                body=body,
+                payload=payload,
+            )
 
     # ── Existing endpoints (preserved) ──
 
@@ -112,6 +141,9 @@ class InventoryService:
             "inventory:analyzed", 
             {"analyses": analyses, "user_id": user_id}
         )
+
+        # Step 5: Create notifications for high-risk materials
+        await self._create_risk_notifications(analyses, user_id)
 
         return {
             "content": result.content,
