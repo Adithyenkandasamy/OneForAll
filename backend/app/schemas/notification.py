@@ -14,6 +14,7 @@ class NotificationRead(ORMModel):
     kind: str
     title: str
     body: str
+    payload: dict | None = None
     is_read: bool
     created_at: datetime
 
