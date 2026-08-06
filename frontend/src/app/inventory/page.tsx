@@ -120,7 +120,7 @@ export default function EditableInventoryPage() {
 
   const criticalItems = inventory.filter(i => {
     const s = (i.risk_level || "").toLowerCase();
-    return s.includes("critical") || s.includes("high") || i.current_stock <= i.minimum_stock;
+    return s.includes("critical") || s.includes("high");
   });
 
   return (

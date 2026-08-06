@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import api from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -24,6 +27,7 @@ import {
   Cpu,
   Factory,
   CheckCircle2,
+  Package,
 } from "lucide-react";
 
 // Mock Data
@@ -54,6 +58,24 @@ const alerts = [
 ];
 
 export default function Dashboard() {
+  const [criticalStock, setCriticalStock] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const res = await api.get("/api/v1/agents/inventory/materials");
+        const highRisk = (res.data || []).filter((item: any) => 
+          (item.risk_level || "").toLowerCase() === "high"
+        );
+        setCriticalStock(highRisk);
+      } catch (err) {}
+    };
+    
+    fetchInventory();
+    const interval = setInterval(fetchInventory, 10000); // 10s auto-sync
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="space-y-6 pb-12">
       {/* Header Section */}
@@ -301,6 +323,4 @@ function MetricCard({ title, value, trend, isPositive, icon: Icon, delay }: Metr
   );
 }
 
-function cn(...classes: (string | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
-}
+

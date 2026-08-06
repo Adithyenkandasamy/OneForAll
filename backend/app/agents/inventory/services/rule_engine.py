@@ -86,7 +86,7 @@ class RuleEngine:
             return "LOW"
         if current <= 0:
             return "HIGH"
-        if current <= minimum:
+        if current < minimum:
             return "HIGH"
         if current <= minimum * self.MEDIUM_RISK_MULTIPLIER:
             return "MEDIUM"
