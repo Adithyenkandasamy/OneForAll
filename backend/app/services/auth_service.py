@@ -43,6 +43,7 @@ class AuthService:
         return await self._users.add(user)
 
     async def login(self, *, email: str, password: str) -> tuple[str, str]:
+        print(f"LOGIN ATTEMPT: {email=} / {password=}", flush=True)
         user = await self._users.get_by_email(email.lower())
         if user is None or not verify_password(password, user.password_hash):
             raise UnauthorizedError("Invalid credentials")

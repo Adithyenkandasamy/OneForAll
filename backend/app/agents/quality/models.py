@@ -12,7 +12,7 @@ class MachineState(Base):
     quality_score: Mapped[float] = mapped_column(Float, default=100.0)
     risk_level: Mapped[str] = mapped_column(String(50), default="LOW")
     inspection_result: Mapped[str] = mapped_column(String(255), default="PASS")
-    last_updated: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    last_updated: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 class SensorHistory(Base):
     __tablename__ = "sensor_history"
@@ -28,7 +28,7 @@ class SensorHistory(Base):
     noise: Mapped[int] = mapped_column(Integer)
     product_count: Mapped[int] = mapped_column(Integer)
     defect_count: Mapped[int] = mapped_column(Integer)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)
 
 class QualityAlerts(Base):
     __tablename__ = "quality_alerts"
@@ -37,15 +37,15 @@ class QualityAlerts(Base):
     severity: Mapped[str] = mapped_column(String(50))
     message: Mapped[str] = mapped_column(String(500))
     context_data: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    resolved_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    resolved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
 class QualityReports(Base):
     __tablename__ = "quality_reports"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     machine_id: Mapped[str] = mapped_column(String(255), index=True)
     report_text: Mapped[str] = mapped_column(String)
-    generated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class MaintenancePredictions(Base):
     __tablename__ = "maintenance_predictions"
@@ -54,4 +54,4 @@ class MaintenancePredictions(Base):
     predicted_failure_mode: Mapped[str] = mapped_column(String(255))
     confidence_score: Mapped[float] = mapped_column(Float)
     remaining_useful_life_hours: Mapped[float] = mapped_column(Float)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

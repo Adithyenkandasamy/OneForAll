@@ -47,6 +47,7 @@ class MQTTConsumer:
         
         async with get_sessionmaker()() as session:
             # 1. Store precise sensor history 
+            json_dump = dto.model_dump(mode='json')
             dumped = dto.model_dump()
             db_sensor = SensorHistory(**dumped)
             session.add(db_sensor)
@@ -69,15 +70,15 @@ class MQTTConsumer:
                     machine_id=m_id, 
                     severity="CRITICAL", 
                     message=f"Risk Level CRITICAL detected. Metric Inspection: {status_dto.inspection_result}",
-                    context_data=dumped
+                    context_data=json_dump
                 )
                 session.add(alert)
-                await bus.publish("quality:alert", {"machine_id": m_id, "status": status_dto.model_dump(), "sensor": dumped})
+                await bus.publish("quality:alert", {"machine_id": m_id, "status": status_dto.model_dump(mode='json'), "sensor": json_dump})
 
             # Broadcast native WebSockets push message (Phase 8 UI refactor dependencies)
             await bus.publish(
                 "quality:updated",
-                {"machine_id": m_id, "status": status_dto.model_dump(), "telemetry": dumped}
+                {"machine_id": m_id, "status": status_dto.model_dump(mode='json'), "telemetry": json_dump}
             )
 
             await session.commit()

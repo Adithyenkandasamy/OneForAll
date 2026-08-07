@@ -6,6 +6,10 @@ import app.models  # This initializes the registry
 async def init_db():
     engine = _get_engine()
     async with engine.begin() as conn:
+        print("Dropping legacy Quality tables...", flush=True)
+        # Fast development drop
+        await conn.run_sync(Base.metadata.drop_all)
+        print("Recreating clean MQTT tables natively...", flush=True)
         await conn.run_sync(Base.metadata.create_all)
     print("MQTT DB Init complete.")
 
