@@ -2,10 +2,8 @@ with open("/home/adhi/Adhii/OneForAll/backend/app/agents/quality/scheduler/polli
     text = f.read()
 
 text = text.replace(
-    'db_sensor = SensorData(**dto.model_dump())',
-    '''dumped = dto.model_dump()
-                dumped.pop("id", None)
-                db_sensor = SensorData(**dumped)'''
+    'logger.debug(f"Polled {len(raw_rows)} telemetry frames successfully.")',
+    'logger.debug(f"Polled {len(raw_rows)} telemetry frames successfully."); open("I_RAN.txt", "w").write("YES " + str(len(raw_rows)))'
 )
 
 with open("/home/adhi/Adhii/OneForAll/backend/app/agents/quality/scheduler/polling_service.py", "w") as f:

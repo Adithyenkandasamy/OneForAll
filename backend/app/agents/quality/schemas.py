@@ -1,28 +1,25 @@
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Optional
 
-class MockarooSensorRead(BaseModel):
-    id: int
+class MQTTMachineTelemetry(BaseModel):
+    machine_id: str
     temperature: float
-    vibration: float
     rpm: int
     pressure: float
-    humidity: float
-    spindle_load: float
+    vibration: float
+    humidity: int
     tool_wear: float
-    power_consumption: float
-    noise_level: float
+    power: float
+    noise: int
     product_count: int
     defect_count: int
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class SensorDataDTO(MockarooSensorRead):
-    machine_id: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-
-class MachineStatusDTO(BaseModel):
+class QualityAnalysisResult(BaseModel):
     machine_id: str
     health_score: float
     quality_score: float
     risk_level: str
     inspection_result: str
-    last_updated: datetime
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

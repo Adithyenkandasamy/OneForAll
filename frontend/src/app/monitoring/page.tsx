@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import api from "@/lib/api";
-import { 
-  Activity, 
-  Thermometer, 
-  Settings2, 
+import {
+  Activity,
+  Thermometer,
+  Settings2,
   AlertTriangle,
   Cpu,
   CheckCircle2
@@ -18,28 +18,57 @@ export default function QualityMonitoringPage() {
   const [machines, setMachines] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchQuality = async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
-    try {
-      const res = await api.get("/api/v1/agents/quality/dashboard");
-      if (res.data && res.data.machines) {
-        // Sort explicitly by Machine ID strings like "Machine-01" to keep it stable
-        const sorted = res.data.machines.sort((a: any, b: any) => 
-            a.machine_id.localeCompare(b.machine_id)
-        );
-        setMachines(sorted);
-      }
-    } catch (err) {
-      console.error("Failed to fetch quality dashboard", err);
-    } finally {
-      if (!isSilent) setLoading(false);
-    }
-  };
-
+  // Connect natively to the FastAPI EventBus Websocket stream
   useEffect(() => {
-    fetchQuality();
-    const interval = setInterval(() => fetchQuality(true), 10000);
-    return () => clearInterval(interval);
+    let reconnectTimeout: NodeJS.Timeout;
+    let ws: WebSocket;
+
+    const connectWS = () => {
+      ws = new WebSocket("ws://127.0.0.1:8000/api/v1/ws/dashboard");
+
+      ws.onopen = () => {
+        setLoading(false);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          // Payload format: {"machine_id": "...", "status": {}, "telemetry": {}}
+          const payload = JSON.parse(event.data);
+
+          setMachines(prev => {
+            const arr = [...prev];
+            const idx = arr.findIndex(m => m.machine_id === payload.machine_id);
+            const flatMachine = {
+              machine_id: payload.machine_id,
+              ...payload.status,
+              ...payload.telemetry
+            };
+
+            if (idx === -1) {
+              arr.push(flatMachine);
+            } else {
+              arr[idx] = flatMachine;
+            }
+            // Maintain stable sort order
+            return arr.sort((a, b) => a.machine_id.localeCompare(b.machine_id));
+          });
+        } catch (e) {
+          console.error("Payload parse error:", e);
+        }
+      };
+
+      ws.onclose = () => {
+        // Auto-reconnect on dropped physics frames
+        reconnectTimeout = setTimeout(connectWS, 3000);
+      };
+    };
+
+    connectWS();
+
+    return () => {
+      clearTimeout(reconnectTimeout);
+      if (ws) ws.close();
+    };
   }, []);
 
   return (
@@ -57,28 +86,28 @@ export default function QualityMonitoringPage() {
 
       {/* Aggregate Engine Summaries */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MetricCard 
-          title="Active Machines" 
-          value={machines.length} 
-          icon={Cpu} 
-          trend="Tracking" 
+        <MetricCard
+          title="Active Machines"
+          value={machines.length}
+          icon={Cpu}
+          trend="Tracking"
         />
-        <MetricCard 
-          title="Avg Health Score" 
-          value={machines.length ? `${Math.round(machines.reduce((acc, m) => acc + (m.health_score || 0), 0) / machines.length)}%` : "0%"} 
-          icon={Activity} 
-          trend="Nominal" 
+        <MetricCard
+          title="Avg Health Score"
+          value={machines.length ? `${Math.round(machines.reduce((acc, m) => acc + (m.health_score || 0), 0) / machines.length)}%` : "0%"}
+          icon={Activity}
+          trend="Nominal"
         />
-        <MetricCard 
-          title="Avg Quality Score" 
-          value={machines.length ? `${Math.round(machines.reduce((acc, m) => acc + (m.quality_score || 0), 0) / machines.length)}%` : "0%"} 
-          icon={CheckCircle2} 
-          trend="Nominal" 
+        <MetricCard
+          title="Avg Quality Score"
+          value={machines.length ? `${Math.round(machines.reduce((acc, m) => acc + (m.quality_score || 0), 0) / machines.length)}%` : "0%"}
+          icon={CheckCircle2}
+          trend="Nominal"
         />
-        <MetricCard 
-          title="Critical Alerts" 
-          value={machines.filter((m) => (m.risk_level || "").toLowerCase() === "high").length} 
-          icon={AlertTriangle} 
+        <MetricCard
+          title="Critical Alerts"
+          value={machines.filter((m) => (m.risk_level || "").toLowerCase() === "high").length}
+          icon={AlertTriangle}
           trend="Requires Action"
           status={machines.filter((m) => (m.risk_level || "").toLowerCase() === "high").length > 0 ? "warning" : "normal"}
         />
@@ -103,16 +132,16 @@ export default function QualityMonitoringPage() {
               ))}
             </tbody>
           </table>
-          
+
           {loading && machines.length === 0 && (
-             <div className="w-full py-12 flex justify-center text-zinc-500 animate-pulse">Loading telemetry engines...</div>
+            <div className="w-full py-12 flex justify-center text-zinc-500 animate-pulse">Loading telemetry engines...</div>
           )}
           {!loading && machines.length === 0 && (
-             <div className="w-full py-12 flex justify-center text-zinc-500">No mockaroo data received yet.</div>
+            <div className="w-full py-12 flex justify-center text-zinc-500">No mockaroo data received yet.</div>
           )}
         </div>
       </Card>
-      
+
     </div>
   );
 }
@@ -150,8 +179,8 @@ function MachineRow({ data }: any) {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex gap-4 text-xs font-mono text-zinc-600">
-           <span className="flex items-center gap-1"><Thermometer className="h-3 w-3"/> {data.temperature?.toFixed(1)}°C</span>
-           <span className="flex items-center gap-1"><Activity className="h-3 w-3"/> {(data.vibration || 0).toFixed(2)}v</span>
+          <span className="flex items-center gap-1"><Thermometer className="h-3 w-3" /> {data.temperature?.toFixed(1)}°C</span>
+          <span className="flex items-center gap-1"><Activity className="h-3 w-3" /> {(data.vibration || 0).toFixed(2)}v</span>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap font-mono font-medium">

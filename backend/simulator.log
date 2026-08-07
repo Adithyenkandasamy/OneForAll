@@ -1,0 +1,4 @@
+'auth' and 'topic-check' are deprecated, use 'plugins' to define configuration
+Loading plugins from config will ignore 'topic-check' section of config
+Embedded amqtt broker started on 1883
+Booted 10 virtual machine telemetry streams.

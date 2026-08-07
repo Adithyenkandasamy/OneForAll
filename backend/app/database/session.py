@@ -25,7 +25,7 @@ def _get_engine() -> AsyncEngine:
     global _engine, _sessionmaker
     if _engine is None:
         url = settings.db_dsn
-        connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
+        connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {"statement_cache_size": 0, "prepared_statement_cache_size": 0}
         _engine = create_async_engine(url, connect_args=connect_args, pool_pre_ping=True)
         _sessionmaker = async_sessionmaker(_engine, expire_on_commit=False)
     return _engine

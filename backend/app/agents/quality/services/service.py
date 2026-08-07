@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import select
 from app.database.session import get_sessionmaker
-from app.agents.quality.models import MachineStatus, SensorData
+from app.agents.quality.models import MachineState, SensorHistory
 from app.agents.quality.llm.agent import QualityAgent
 
 class QualityService:
@@ -10,14 +10,14 @@ class QualityService:
         
     async def get_dashboard_state(self) -> dict:
         async with get_sessionmaker()() as session:
-            result = await session.execute(select(MachineStatus))
+            result = await session.execute(select(MachineState))
             machines = result.scalars().all()
             
             d_machines = []
             for m in machines:
                 # Get latest sensor read
                 s_res = await session.execute(
-                    select(SensorData).where(SensorData.machine_id == m.machine_id).order_by(SensorData.timestamp.desc()).limit(1)
+                    select(SensorHistory).where(SensorHistory.machine_id == m.machine_id).order_by(SensorHistory.timestamp.desc()).limit(1)
                 )
                 sensor = s_res.scalars().first()
                 d_machines.append({

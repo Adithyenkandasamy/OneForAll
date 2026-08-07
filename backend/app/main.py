@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import asyncio
+from app.agents.quality.mqtt.consumer import mqtt_consumer
 
 from app.api.router import api_router, include_agent_routers, include_agents_catalog
 from app.core.config import settings
@@ -20,7 +22,9 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     logger.info("OneForAll  started", extra={"env": settings.app_env})
+    mqtt_task = asyncio.create_task(mqtt_consumer.run())
     yield
+    await mqtt_consumer.stop()
     logger.info("OneForAll  stopped")
 
 
@@ -53,4 +57,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-\n# Force reload for Supabase IPv4

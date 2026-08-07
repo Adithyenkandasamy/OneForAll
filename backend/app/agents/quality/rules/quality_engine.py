@@ -1,5 +1,5 @@
-from datetime import datetime
-from app.agents.quality.schemas import SensorDataDTO, MachineStatusDTO
+from datetime import datetime, timezone
+from app.agents.quality.schemas import MQTTMachineTelemetry, QualityAnalysisResult
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -7,7 +7,7 @@ logger = get_logger(__name__)
 class QualityEngine:
     """Deterministic Rule Engine for manufacturing sensor data."""
 
-    def evaluate(self, data: SensorDataDTO) -> MachineStatusDTO:
+    def evaluate(self, data: MQTTMachineTelemetry) -> QualityAnalysisResult:
         # 1. Base Penalties
         health_penalty = 0.0
         
@@ -48,11 +48,11 @@ class QualityEngine:
         else:
             inspection_result = "PASS"
             
-        return MachineStatusDTO(
+        return QualityAnalysisResult(
             machine_id=data.machine_id,
             health_score=round(health_score, 1),
             quality_score=round(quality_score, 1),
             risk_level=risk_level,
             inspection_result=inspection_result,
-            last_updated=datetime.utcnow()
+            last_updated=datetime.now(timezone.utc)
         )

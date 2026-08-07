@@ -6,9 +6,11 @@ from fastapi import APIRouter
 from app.agents.quality.api.router import quality_router
 
 from app.api.v1 import auth, conversations, dashboard, health, history, notifications, users
+from app.api.ws.router import router as ws_router
 
 api_router = APIRouter()
 api_router.include_router(health.router)
+api_router.include_router(ws_router, prefix="/ws")
 api_router.include_router(auth.router)
 api_router.include_router(users.router)
 api_router.include_router(notifications.router)
