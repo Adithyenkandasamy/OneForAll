@@ -40,7 +40,7 @@ export default function QualityMonitoringPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Process Intelligence</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Quality Intelligence</h1>
           <p className="text-muted-foreground mt-1">
             {source === "live"
               ? "Live machine telemetry refreshed every five seconds"
@@ -64,7 +64,7 @@ export default function QualityMonitoringPage() {
       {/* Metric cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <MetricCard title="Active CNC Nodes" value={validMachines.length.toString()} icon={Cpu} trend="Synchronized" />
-        <MetricCard title="Avg Fleet Health" value={`${avgHealth}%`} icon={Activity} trend="Aggregate Metric" />
+        <MetricCard title="Avg Machine Health" value={`${avgHealth}%`} icon={Activity} trend="Aggregate Metric" />
         <MetricCard title="Yield Quality" value={`${avgQuality}%`} icon={CheckCircle2} trend="Aggregate Metric" />
         <MetricCard
           title="Priority Breaches"

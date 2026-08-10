@@ -53,7 +53,7 @@ export default function UserLoginPage() {
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
                         O
                     </div>
-                    <span className="text-xl font-semibold tracking-tight">OneForAll  AI</span>
+                    <span className="text-xl font-semibold tracking-tight">OneForAll AI</span>
                 </div>
 
                 <Card className="w-full shadow-lg border-border bg-card">

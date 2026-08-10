@@ -20,14 +20,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { name: "Central AI", href: "/ai", icon: BrainCircuit },
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "OneForAll Copilot", href: "/ai", icon: BrainCircuit },
+  { name: "Operations Overview", href: "/dashboard", icon: LayoutDashboard },
   { name: "Plants", href: "/plants", icon: Factory },
-  { name: "Machines", href: "/machines", icon: Cpu },
-  { name: "Monitoring", href: "/monitoring", icon: Activity },
-  { name: "Predictive Maint.", href: "/maintenance", icon: AlertTriangle },
-  { name: "Inventory", href: "/inventory", icon: Boxes },
-  { name: "Analytics", href: "/analytics", icon: LineChart },
+  { name: "Quality Intelligence", href: "/monitoring", icon: Activity },
+  { name: "Maintenance Intelligence", href: "/maintenance", icon: AlertTriangle },
+  { name: "Inventory Intelligence", href: "/inventory", icon: Boxes },
+  { name: "Production Intelligence", href: "/analytics", icon: LineChart },
   { name: "Team", href: "/team", icon: Users },
 ];
 
@@ -38,7 +37,7 @@ export function Sidebar() {
   return (
     <aside className="w-64 border-r bg-white h-screen sticky top-0 flex flex-col hidden md:flex shrink-0">
       <div className="h-16 flex items-center px-6 border-b">
-        <div className="font-bold text-lg tracking-tight">OneForAll  AI</div>
+        <div className="font-bold text-lg tracking-tight">OneForAll AI</div>
       </div>
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {navItems.map((item) => {
@@ -86,7 +85,7 @@ export function Sidebar() {
       )}
 
       <div className="p-4 border-t text-xs text-gray-500 text-center">
-        © 2026 OneForAll  Corp.
+        © 2026 OneForAll AI
       </div>
     </aside>
   );

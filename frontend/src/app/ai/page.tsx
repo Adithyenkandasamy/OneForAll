@@ -31,7 +31,7 @@ export default function CentralAIPage() {
     {
       id: "intro",
       role: "ai",
-      content: "Hello! I am OneForAll Central AI. I natively orchestrate and control all modular microservices including Inventory, Production, and Team Management. How can I assist you today?"
+      content: "Hello! I am OneForAll Copilot. I combine validated inventory, quality, maintenance, and production insights into clear recommendations. How can I help?"
     }
   ]);
   const [chatLoading, setChatLoading] = useState(false);
@@ -64,12 +64,12 @@ export default function CentralAIPage() {
     <div className="space-y-6 pb-12 w-full animate-in fade-in duration-500 h-full max-h-screen flex flex-col pt-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Central Intelligence</h1>
-          <p className="text-muted-foreground mt-1">Multi-agent orchestration and global platform access.</p>
+          <h1 className="text-3xl font-bold tracking-tight">OneForAll Copilot</h1>
+          <p className="text-muted-foreground mt-1">Cross-domain operational insights and recommended actions.</p>
         </div>
         <Badge variant="outline" className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20 px-3 py-1">
           <BrainCircuit className="w-3 h-3 mr-2 animate-pulse" />
-          Mock AI Engine Active
+          Demonstration mode
         </Badge>
       </div>
 
@@ -80,10 +80,10 @@ export default function CentralAIPage() {
               <div className="p-1.5 rounded-md bg-indigo-500/20 text-indigo-500">
                 <Bot className="h-5 w-5" />
               </div>
-              OneForAll Master Orchestrator
+              OneForAll Operations Copilot
             </CardTitle>
             <CardDescription className="text-xs">
-              Direct access interface to the global ecosystem.
+              Combines domain results; deterministic services remain the source of operational facts.
             </CardDescription>
           </CardHeader>
 

@@ -198,10 +198,9 @@ export default function LandingPage() {
             custom={2}
             className="text-lg sm:text-xl text-zinc-500 max-w-2xl mx-auto leading-relaxed mb-10"
           >
-            OneForAll AI connects your Google Sheets inventory, live machine
-            telemetry, and quality metrics into a unified AI assistant. Ask
-            questions in plain English — get analysis, risk detection, and
-            recommendations instantly.
+            OneForAll AI connects factory information, analyzes operational
+            conditions, detects risks, and gives employees clear,
+            actionable recommendations.
           </motion.p>
 
           <motion.div
@@ -487,7 +486,7 @@ export default function LandingPage() {
             </span>
           </div>
           <p className="text-xs text-zinc-400">
-            © {new Date().getFullYear()} OneForAll Corp. All rights reserved.
+            © {new Date().getFullYear()} OneForAll AI. All rights reserved.
           </p>
         </div>
       </footer>

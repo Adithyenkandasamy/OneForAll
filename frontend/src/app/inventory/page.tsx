@@ -128,8 +128,8 @@ export default function EditableInventoryPage() {
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Inventory Data Management</h1>
-          <p className="text-muted-foreground mt-1">Direct read/write access to Google Sheets via MCP.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Inventory Intelligence</h1>
+          <p className="text-muted-foreground mt-1">Material health, stock risk, and reorder decisions from your inventory source.</p>
         </div>
 
       </div>

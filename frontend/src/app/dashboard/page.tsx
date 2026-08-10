@@ -39,18 +39,18 @@ export default function Dashboard() {
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Enterprise Overview</h1>
-          <p className="text-gray-500 mt-1">Real-time telemetry and AI insights across all facilities.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Operations Overview</h1>
+          <p className="text-gray-500 mt-1">A single view of operational health, risk, and recommended actions.</p>
         </div>
         <div className="flex gap-2">
           <Badge variant="outline" className="px-3 py-1 bg-green-50 text-green-700 border-green-200">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              All Systems Nominal
+              Operational Snapshot
             </span>
           </Badge>
           <Badge variant="outline" className="px-3 py-1">
-            Live Mock Data
+            Simulated demonstration data
           </Badge>
         </div>
       </div>

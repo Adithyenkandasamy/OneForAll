@@ -15,8 +15,8 @@ export default function MaintenancePage() {
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Predictive Maintenance</h1>
-          <p className="text-gray-500 mt-1">AI-driven failure prediction and maintenance scheduling.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Maintenance Intelligence</h1>
+          <p className="text-gray-500 mt-1">Risk-based maintenance recommendations and scheduling support.</p>
         </div>
       </div>
 

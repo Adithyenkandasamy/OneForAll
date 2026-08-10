@@ -23,7 +23,7 @@ export default function MachinesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Machine Fleet</h1>
-          <p className="text-gray-500 mt-1">Manage and monitor all factory equipment.</p>
+          <p className="text-gray-500 mt-1">Manage factory assets, operating status, uptime, and maintenance ownership.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2">

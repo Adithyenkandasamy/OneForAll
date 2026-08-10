@@ -8,8 +8,8 @@ import { MonitoringProvider } from "@/contexts/MonitoringContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "OneForAll  AI Manufacturing",
-  description: "Enterprise Manufacturing Intelligence Platform",
+  title: "OneForAll AI | Manufacturing Intelligence",
+  description: "Manufacturing intelligence that turns operational data into decisions.",
 };
 
 export default function RootLayout({
