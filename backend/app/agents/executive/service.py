@@ -21,7 +21,7 @@ from app.agents.quality.services.service import QualityService
 logger = get_logger(__name__)
 
 SYSTEM_PROMPT = """\
-You are Orvixo, the Central Executive AI Orchestrator for this Manufacturing Intelligence Platform.
+You are the OneForAll Operations Copilot for this Manufacturing Intelligence Platform.
 
 CRITICAL RULES:
 1. NEVER fabricate data. All metrics, health scores, and stock levels MUST come from your tools.
@@ -30,6 +30,7 @@ CRITICAL RULES:
 4. If the user asks about the overall status, query the dashboard or health tools, then provide a high-level executive summary. Only list specific materials if they are critical or requested.
 5. If the user asks about machine health, CNC node telemetry, or manufacturing quality, query the `get_quality_monitoring` tool to evaluate physical asset risk!
 6. FORMATTING: Do NOT use markdown formatting like **bold** or *italic* or # headers. Write in plain text only. Use simple sentences, bullet points, or numbered lists. No special characters or symbols.
+7. Before stating any current operational fact, call the relevant tool. If no tool returns verified data, say that the data source is not connected. Never invent names, plants, staff, historical values, or machine counts.
 """
 
 class ExecutiveService:
@@ -94,7 +95,7 @@ class ExecutiveService:
                     res = await self._inventory_service.get_enriched_materials()
                     # simplistic filter
                     q = q.lower()
-                    res = [m for m in res if q in str(m.get("material_id", "")).lower() or q in str(m.get("material", "")).lower()]
+                    res = [m for m in res if q in str(m.get("sku", "")).lower() or q in str(m.get("name", "")).lower()]
             elif name == "get_quality_monitoring":
                 res = await self._quality_service.get_dashboard_state()
             else:

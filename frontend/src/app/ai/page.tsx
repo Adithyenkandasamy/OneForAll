@@ -7,23 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Send, Bot, User, BrainCircuit } from "lucide-react";
+import api from "@/lib/api";
 
 interface ChatMessage {
   id: string;
   role: "user" | "ai";
   content: string;
 }
-
-const MOCK_RESPONSES = [
-  "Based on current production metrics, all 4 plants are operating within nominal parameters. Berlin Gigafactory is leading with 96% health score.",
-  "Inventory analysis complete: 3 materials flagged for reorder. Steel coils are at critical levels — recommended order quantity: 500 units.",
-  "Quality assurance alert: CNC Machine 04 showed a 12% vibration spike in the last hour. Recommend immediate inspection.",
-  "Predictive maintenance forecast: Conveyor Motor Drive (MCH-004) has a 65% failure probability within 72 hours. Scheduling preemptive service.",
-  "Weekly production summary: Total output 47,200 units across all lines. OEE improved by 3.2% compared to last week.",
-  "Energy consumption analysis: Current draw is 4.1 MWh, which is 0.3 MWh below the weekly average. Good efficiency gains on Line 3.",
-  "Team status update: Elena Rodriguez is on leave until Oct 15. Maintenance coverage handled by Crew B.",
-  "AI insight: The Shanghai plant's robotic arms are showing micro-torque drift. Calibration recommended within 48 hours.",
-];
 
 export default function CentralAIPage() {
   const [chatQuery, setChatQuery] = useState("");
@@ -52,12 +42,31 @@ export default function CentralAIPage() {
     setChatMessages((prev) => [...prev, { id: Date.now().toString(), role: "user", content: userQuery }]);
     setChatLoading(true);
 
-    // Simulate AI response with mock data
-    setTimeout(() => {
-      const response = MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
-      setChatMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: response }]);
+    try {
+      const response = await api.post<{
+        content: string;
+        conversation_id?: string | null;
+      }>("/api/v1/agents/executive/chat", {
+        query: userQuery,
+        conversation_id: "oneforall-copilot",
+      });
+      setChatMessages((prev) => [
+        ...prev,
+        { id: (Date.now() + 1).toString(), role: "ai", content: response.data.content },
+      ]);
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "ai",
+          content:
+            "I could not reach the verified data service. No estimate or demonstration data was shown. Please try again after the backend is available.",
+        },
+      ]);
+    } finally {
       setChatLoading(false);
-    }, 800 + Math.random() * 1200);
+    }
   };
 
   return (
@@ -69,7 +78,7 @@ export default function CentralAIPage() {
         </div>
         <Badge variant="outline" className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20 px-3 py-1">
           <BrainCircuit className="w-3 h-3 mr-2 animate-pulse" />
-          Demonstration mode
+          Verified data only
         </Badge>
       </div>
 
@@ -126,7 +135,7 @@ export default function CentralAIPage() {
             <form onSubmit={handleChatSubmit} className="flex w-full gap-3 relative">
               <Input
                 className="pr-12 bg-muted/30 border-border focus-visible:ring-indigo-500 h-12 shadow-sm rounded-xl text-md"
-                placeholder="Message the Global Orchestrator..."
+                placeholder="Ask about connected inventory or monitored machines..."
                 value={chatQuery}
                 onChange={(e) => setChatQuery(e.target.value)}
                 disabled={chatLoading}
