@@ -35,8 +35,8 @@ class MQTTConsumer:
                         except Exception as parse_error:
                             logger.error(f"Malformed MQTT Payload on {message.topic}: {parse_error}")
             except aiomqtt.MqttError as error:
-                logger.warning(f"Connection to Mosquitto dropped: {error}. Reconnecting in 5s...")
-                await asyncio.sleep(5)
+                logger.warning(f"Connection to Mosquitto dropped: {error}. Reconnecting in 60s...")
+                await asyncio.sleep(60)
             except Exception as e:
                 logger.error(f"MQTT Consumer fatally crashed: {e}")
                 await asyncio.sleep(5)
