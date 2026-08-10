@@ -245,33 +245,14 @@ export default function EditableInventoryPage() {
                       {item.minimum_stock}
                     </TableCell>
 
-                    {/* Editable Status */}
-                    <TableCell
-                      className="align-middle cursor-pointer hover:bg-muted/40 transition-colors"
-                      onDoubleClick={() => startEdit(item, "ai_risk_level", item.risk_level)}
-                    >
-                      {editingCell?.sku === item.sku && editingCell.column === "ai_risk_level" ? (
-                        <div className="flex items-center gap-2">
-                          <Input
-                            autoFocus
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            onKeyDown={(e) => handleKeyDown(e, item.sku)}
-                            disabled={updating}
-                            className="h-8 py-1 px-2 text-xs"
-                            onBlur={() => handleUpdate(item.sku)}
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={() => loadInventory(false)}
-                            variant="outline" className={getStatusColor(item.risk_level)}>
-                            {item.risk_level}
-                          </Button>
-                          <Edit2 className="w-3 h-3 text-transparent group-hover:text-muted-foreground/30 transition-colors" />
-                        </div>
-                      )}
+                    {/* Status Badge */}
+                    <TableCell className="align-middle">
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(item.risk_level)}`}>
+                          {item.risk_level}
+                        </span>
+                        <Edit2 className="w-3 h-3 text-transparent group-hover:text-muted-foreground/30 transition-colors" />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

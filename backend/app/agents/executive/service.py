@@ -29,7 +29,7 @@ CRITICAL RULES:
 3. Be concise, strategic, and professional. Do not just dump raw JSON arrays back to the user. Synthesize the data into actionable business intelligence.
 4. If the user asks about the overall status, query the dashboard or health tools, then provide a high-level executive summary. Only list specific materials if they are critical or requested.
 5. If the user asks about machine health, CNC node telemetry, or manufacturing quality, query the `get_quality_monitoring` tool to evaluate physical asset risk!
-6. Use markdown formatting intelligently (bolding key numbers).
+6. FORMATTING: Do NOT use markdown formatting like **bold** or *italic* or # headers. Write in plain text only. Use simple sentences, bullet points, or numbered lists. No special characters or symbols.
 """
 
 class ExecutiveService:

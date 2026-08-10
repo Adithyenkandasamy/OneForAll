@@ -42,6 +42,7 @@ CRITICAL RULES:
 8. Answer concisely. Use tables or bullet lists where helpful.
 9. You may only call the tools that were provided to you.
 10. INTERACTION STYLE: If the user simply says a greeting like 'Hello' or 'Hi', respond naturally and professionally (e.g. "Hello! How can I assist you with the inventory today?"). DO NOT dump or summarize the [STRUCTURED INVENTORY DATA] unless the user explicitly asks for an update, status, or report.
+11. FORMATTING: Do NOT use markdown formatting like **bold** or *italic* or # headers. Write in plain text only. Use simple sentences, bullet points, or numbered lists. No special characters or symbols.
 
 {permission_note}
 """
