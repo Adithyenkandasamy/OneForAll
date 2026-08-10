@@ -12,11 +12,16 @@ from app.shared.events import bus
 logger = get_logger(__name__)
 
 class MQTTConsumer:
+    _INITIAL_BACKOFF = 5
+    _MAX_BACKOFF = 60
+
     def __init__(self, broker_url="127.0.0.1", port=1883):
         self.broker_url = broker_url
         self.port = port
         self.rules = QualityEngine()
         self._running = False
+        self._backoff = self._INITIAL_BACKOFF
+        self._consecutive_failures = 0
         
     async def run(self):
         self._running = True
@@ -25,6 +30,12 @@ class MQTTConsumer:
         while self._running:
             try:
                 async with aiomqtt.Client(hostname=self.broker_url, port=self.port, identifier="fastapi_quality_agent") as client:
+                    # Connection succeeded — reset backoff
+                    if self._consecutive_failures > 0:
+                        logger.info("Reconnected to Mosquitto successfully.")
+                    self._backoff = self._INITIAL_BACKOFF
+                    self._consecutive_failures = 0
+
                     await client.subscribe("factory/machines/#")
                     async for message in client.messages:
                         if not self._running:
@@ -35,11 +46,16 @@ class MQTTConsumer:
                         except Exception as parse_error:
                             logger.error(f"Malformed MQTT Payload on {message.topic}: {parse_error}")
             except aiomqtt.MqttError as error:
-                logger.warning(f"Connection to Mosquitto dropped: {error}. Reconnecting in 60s...")
-                await asyncio.sleep(60)
+                self._consecutive_failures += 1
+                if self._consecutive_failures <= 1:
+                    logger.warning(f"Connection to Mosquitto failed: {error}. Retrying in {self._backoff}s (will back off on repeated failures)...")
+                else:
+                    logger.debug(f"Mosquitto still unavailable (attempt {self._consecutive_failures}). Next retry in {self._backoff}s.")
+                await asyncio.sleep(self._backoff)
+                self._backoff = min(self._backoff * 2, self._MAX_BACKOFF)
             except Exception as e:
                 logger.error(f"MQTT Consumer fatally crashed: {e}")
-                await asyncio.sleep(5)
+                await asyncio.sleep(self._INITIAL_BACKOFF)
 
     async def _process_message(self, raw_payload: dict):
         dto = MQTTMachineTelemetry(**raw_payload)

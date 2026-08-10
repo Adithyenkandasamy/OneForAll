@@ -11,19 +11,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isAuthenticated, loading } = useAuth();
 
-  const isLoginPage = pathname?.includes("/login") || false;
+  const isPublicPage =
+    pathname?.includes("/login") || pathname?.includes("/landing") || false;
 
   useEffect(() => {
-    if (!loading && !isAuthenticated && !isLoginPage) {
+    if (!loading && !isAuthenticated && !isPublicPage) {
       router.push("/login");
     }
-  }, [loading, isAuthenticated, isLoginPage, router]);
+  }, [loading, isAuthenticated, isPublicPage, router]);
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen w-full bg-zinc-950 text-white">Loading application...</div>;
   }
 
-  if (isLoginPage) {
+  if (isPublicPage) {
     return <>{children}</>;
   }
 
