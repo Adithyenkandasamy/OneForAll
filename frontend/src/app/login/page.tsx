@@ -123,15 +123,7 @@ export default function UserLoginPage() {
                         </form>
                     </CardContent>
 
-                    <CardFooter className="flex justify-center border-t border-border bg-muted/20 px-6 py-4">
-                        <p className="text-xs text-muted-foreground flex gap-1 items-center">
-                            Administrative personnel?
-                            <a href="/admin/login" className="text-primary hover:underline transition-colors flex items-center font-medium ml-1">
-                                Go to Admin Portal
-                                <KeyRound className="w-3 h-3 ml-1" />
-                            </a>
-                        </p>
-                    </CardFooter>
+                   
                 </Card>
             </div>
 
