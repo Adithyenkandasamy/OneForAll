@@ -1,16 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Bell, Lock, User, Globe } from "lucide-react";
 
 export default function SettingsPage() {
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
   return (
     <div className="space-y-6 pb-12">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-gray-500 mt-1">Manage organization preferences and security.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+          <p className="text-gray-500 mt-1">Manage organization preferences and security.</p>
+        </div>
+        {saved && <Badge className="bg-green-50 text-green-700 border-green-200">Saved!</Badge>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -50,7 +62,7 @@ export default function SettingsPage() {
                 <label className="text-sm font-medium">Email Address</label>
                 <Input defaultValue="admin@oneforall.com" type="email" />
               </div>
-              <Button className="bg-black text-white hover:bg-gray-800">Save Changes</Button>
+              <Button className="bg-black text-white hover:bg-gray-800" onClick={handleSave}>Save Changes</Button>
             </CardContent>
           </Card>
         </div>

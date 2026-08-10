@@ -1,19 +1,15 @@
 "use client";
 
+import { useRealtimeData, generatePlantsData } from "@/lib/mockData";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Factory, MapPin, Activity } from "lucide-react";
-
-const plantsData = [
-  { id: "PL-01", name: "Berlin Gigafactory", location: "Germany", status: "Optimal", health: 96, workers: 450, output: "1,200/day" },
-  { id: "PL-02", name: "Texas Assembly Plant", location: "USA", status: "Warning", health: 82, workers: 820, output: "2,400/day" },
-  { id: "PL-03", name: "Shanghai Manufacturing", location: "China", status: "Optimal", health: 98, workers: 1200, output: "4,500/day" },
-  { id: "PL-04", name: "Tokyo Robotics Hub", location: "Japan", status: "Maintenance", health: 65, workers: 210, output: "400/day" },
-];
+import { Factory, MapPin } from "lucide-react";
 
 export default function PlantsPage() {
+  const plantsData = useRealtimeData(generatePlantsData, 5000);
+
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -41,7 +37,7 @@ export default function PlantsPage() {
                   <MapPin className="h-4 w-4 mr-1" />
                   {plant.location}
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm mb-1">
@@ -50,7 +46,7 @@ export default function PlantsPage() {
                     </div>
                     <Progress value={plant.health} className={`h-2 ${plant.health > 90 ? '[&>div]:bg-green-500' : plant.health > 70 ? '[&>div]:bg-amber-500' : '[&>div]:bg-red-500'}`} />
                   </div>
-                  
+
                   <div className="grid grid-cols-3 gap-4 pt-4 border-t">
                     <div>
                       <p className="text-xs text-gray-500">Status</p>

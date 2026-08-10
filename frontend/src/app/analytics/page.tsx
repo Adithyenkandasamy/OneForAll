@@ -1,19 +1,13 @@
 "use client";
 
+import { useRealtimeData, generateAnalyticsData } from "@/lib/mockData";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-const analyticsData = [
-  { month: "Jan", downtime: 45, efficiency: 82 },
-  { month: "Feb", downtime: 30, efficiency: 85 },
-  { month: "Mar", downtime: 20, efficiency: 89 },
-  { month: "Apr", downtime: 25, efficiency: 87 },
-  { month: "May", downtime: 15, efficiency: 92 },
-  { month: "Jun", downtime: 10, efficiency: 95 },
-];
-
 export default function AnalyticsPage() {
+  const analyticsData = useRealtimeData(generateAnalyticsData, 6000);
+
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

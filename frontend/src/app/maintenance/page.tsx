@@ -1,12 +1,16 @@
 "use client";
 
+import { useRealtimeData, generateMaintenanceRisks, generateMaintenanceSchedule } from "@/lib/mockData";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, PenTool, AlertTriangle } from "lucide-react";
+import { Calendar, AlertTriangle } from "lucide-react";
 
 export default function MaintenancePage() {
+  const risks = useRealtimeData(generateMaintenanceRisks, 5000);
+  const schedule = useRealtimeData(generateMaintenanceSchedule, 8000);
+
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -27,23 +31,18 @@ export default function MaintenancePage() {
               <CardDescription className="text-red-700/80">Predicted failure within 72 hours</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-semibold text-gray-900">CNC Spindle Bearing (MCH-001)</span>
-                  <span className="text-red-600 font-bold">92% Risk</span>
+              {risks.map((r, i) => (
+                <div key={i}>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="font-semibold text-gray-900">{r.name}</span>
+                    <span className={`font-bold ${r.risk >= 80 ? "text-red-600" : r.risk >= 60 ? "text-amber-600" : "text-gray-600"}`}>
+                      {r.risk}% Risk
+                    </span>
+                  </div>
+                  <Progress value={r.risk} className={`h-2 [&>div]:bg-current ${r.risk >= 80 ? "text-red-600" : r.risk >= 60 ? "text-amber-500" : "text-gray-400"}`} />
+                  <p className="text-xs text-gray-500 mt-2">Vibration signature matches known failure pattern.</p>
                 </div>
-                <Progress value={92} className="h-2 [&>div]:bg-red-600" />
-                <p className="text-xs text-gray-500 mt-2">Vibration signature matches known failure pattern.</p>
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-semibold text-gray-900">Hydraulic Pump Seal (MCH-002)</span>
-                  <span className="text-amber-600 font-bold">78% Risk</span>
-                </div>
-                <Progress value={78} className="h-2 [&>div]:bg-amber-500" />
-                <p className="text-xs text-gray-500 mt-2">Pressure drop detected during cycle peak.</p>
-              </div>
+              ))}
             </CardContent>
           </Card>
         </motion.div>
@@ -58,29 +57,21 @@ export default function MaintenancePage() {
             </CardHeader>
             <CardContent className="pt-6">
               <div className="space-y-4">
-                <div className="flex items-start gap-4 p-3 rounded-lg border border-gray-100 bg-gray-50">
-                  <div className="bg-white p-2 rounded border border-gray-200 text-center min-w-[60px]">
-                    <p className="text-xs font-bold text-red-600 uppercase">Oct</p>
-                    <p className="text-xl font-black text-gray-900">12</p>
+                {schedule.map((s, i) => (
+                  <div key={i} className="flex items-start gap-4 p-3 rounded-lg border border-gray-100 bg-gray-50">
+                    <div className="bg-white p-2 rounded border border-gray-200 text-center min-w-[60px]">
+                      <p className={`text-xs font-bold uppercase ${s.priority === "Critical" ? "text-red-600" : s.priority === "High" ? "text-amber-600" : "text-gray-500"}`}>{s.month}</p>
+                      <p className="text-xl font-black text-gray-900">{s.day}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">{s.title}</h4>
+                      <p className="text-sm text-gray-500 mt-0.5">Assigned to: {s.team}</p>
+                      <Badge variant="outline" className={`mt-2 text-xs ${s.priority === "Critical" ? "border-red-200 text-red-700 bg-red-50" : s.priority === "High" ? "border-amber-200 text-amber-700 bg-amber-50" : ""}`}>
+                        {s.priority}
+                      </Badge>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Emergency Spindle Replacement</h4>
-                    <p className="text-sm text-gray-500 mt-0.5">Assigned to: Tech Team Alpha</p>
-                    <Badge variant="outline" className="mt-2 text-xs border-red-200 text-red-700 bg-red-50">Critical Priority</Badge>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4 p-3 rounded-lg border border-gray-100 bg-gray-50">
-                  <div className="bg-white p-2 rounded border border-gray-200 text-center min-w-[60px]">
-                    <p className="text-xs font-bold text-gray-500 uppercase">Oct</p>
-                    <p className="text-xl font-black text-gray-900">15</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Routine Conveyor Lubrication</h4>
-                    <p className="text-sm text-gray-500 mt-0.5">Assigned to: Maintenance Crew B</p>
-                    <Badge variant="outline" className="mt-2 text-xs">Standard</Badge>
-                  </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>

@@ -133,7 +133,7 @@ export default function LandingPage() {
       {/* ── Navbar ─────────────────────────────────────────── */}
       <nav className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-white/70 border-b border-zinc-200/60">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-16">
-          <Link href="/landing" className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white font-bold text-sm">
               O
             </div>

@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { name: "Central AI", href: "/ai", icon: BrainCircuit },
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Plants", href: "/plants", icon: Factory },
   { name: "Machines", href: "/machines", icon: Cpu },
   { name: "Monitoring", href: "/monitoring", icon: Activity },
