@@ -53,6 +53,23 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 
+    @field_validator("debug", mode="before")
+    @classmethod
+    def _parse_debug(cls, v: object) -> object:
+        """Accept common environment labels as well as normal boolean values.
+
+        Deployment dashboards often use values such as ``production`` or
+        ``release`` for DEBUG.  Those should disable debug mode rather than
+        preventing the whole application from starting.
+        """
+        if isinstance(v, str):
+            value = v.strip().lower()
+            if value in {"production", "prod", "release", "false", "0", "no", "off"}:
+                return False
+            if value in {"development", "dev", "debug", "true", "1", "yes", "on"}:
+                return True
+        return v
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _parse_cors_origins(cls, v: object) -> object:
