@@ -23,6 +23,7 @@ dependencies = [
     "starlette==0.38.6",
     "gspread==6.1.2",
     "pandas==2.2.2",
+    "aiomqtt>=2.5.1",
 ]
 
 [dependency-groups]

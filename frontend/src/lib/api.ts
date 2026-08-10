@@ -19,7 +19,6 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
-        console.error("AXIOS ERROR DETECTED ON URL:", error.config?.url, error.response?.status);
         return Promise.reject(error);
     }
 );
@@ -35,7 +34,6 @@ api.interceptors.response.use(
                 window.location.href = "/login";
             }
         }
-        console.error("AXIOS ERROR DETECTED ON URL:", error.config?.url, error.response?.status);
         return Promise.reject(error);
     }
 );

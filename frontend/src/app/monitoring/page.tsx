@@ -74,13 +74,13 @@ export default function QualityMonitoringPage() {
   }, []);
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-8 overflow-hidden select-none bg-slate-50/50">
+    <div className="relative min-h-[calc(100vh-4rem)] p-4 md:p-8 overflow-x-hidden select-none bg-slate-50/50">
       {/* Absolute Ambient Backgrounds tailored for light theme */}
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-br from-indigo-50 via-white to-slate-50 -z-20 rounded-b-[4rem] shadow-sm border-b border-indigo-100/50" />
       <div className="absolute top-0 left-10 w-96 h-96 bg-primary/10 blur-[100px] rounded-full -z-10 pointer-events-none" />
       <div className="absolute top-40 right-20 w-80 h-80 bg-emerald-400/10 blur-[100px] rounded-full -z-10 pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
+      <div className="max-w-7xl mx-auto flex flex-col gap-8 animate-in fade-in duration-700 relative z-10">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 relative z-10">
           <div>
             <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 mb-2">
@@ -96,7 +96,7 @@ export default function QualityMonitoringPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           <MetricCard
             title="Active CNC Nodes"
             value={machines.length}
@@ -124,8 +124,8 @@ export default function QualityMonitoringPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <Card className="lg:col-span-3 border-indigo-100/50 bg-white/70 backdrop-blur-xl shadow-xl shadow-indigo-900/5 overflow-hidden rounded-[2rem]">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          <Card className="xl:col-span-3 min-w-0 border-indigo-100/50 bg-white/70 backdrop-blur-xl shadow-xl shadow-indigo-900/5 overflow-hidden rounded-[2rem]">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-indigo-950 font-bold uppercase tracking-wider bg-white/60 border-b border-indigo-100/50 backdrop-blur-md">
@@ -160,7 +160,7 @@ export default function QualityMonitoringPage() {
             </div>
           </Card>
 
-          <Card className="border-indigo-100/50 bg-white/70 backdrop-blur-xl shadow-xl shadow-indigo-900/5 rounded-[2rem] p-6 h-fit">
+          <Card className="min-w-0 border-indigo-100/50 bg-white/70 backdrop-blur-xl shadow-xl shadow-indigo-900/5 rounded-[2rem] p-6 h-fit">
             <h3 className="text-lg font-bold text-zinc-900 mb-4 flex items-center gap-2">
               <Database className="h-5 w-5 text-indigo-600" />
               How this works
@@ -203,7 +203,7 @@ export default function QualityMonitoringPage() {
 
 function MetricCard({ title, value, icon: Icon, trend, status = "normal" }: any) {
   return (
-    <Card className="bg-white/70 backdrop-blur-xl border-indigo-100/50 shadow-xl shadow-indigo-900/5 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-indigo-900/10 rounded-3xl">
+    <Card className="min-w-0 bg-white/70 backdrop-blur-xl border-indigo-100/50 shadow-xl shadow-indigo-900/5 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-indigo-900/10 rounded-3xl">
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
           <div className="space-y-2">
