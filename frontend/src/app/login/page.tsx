@@ -25,7 +25,7 @@ export default function UserLoginPage() {
         try {
             const res = await api.post("/api/v1/auth/login", { email, password });
             await login(res.data.access_token, res.data.refresh_token);
-            router.push("/");
+            router.replace("/dashboard"); 
         } catch (err: any) {
             if (err.response?.status === 401) {
                 setError("Invalid email or password");
