@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 export default function QualityMonitoringPage() {
-  const { machines, connected } = useMonitoring();
+  const { machines, connected, source } = useMonitoring();
 
   const validMachines = machines.filter((m) => m.health_score > 0);
   const avgHealth = validMachines.length
@@ -42,7 +42,9 @@ export default function QualityMonitoringPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Process Intelligence</h1>
           <p className="text-muted-foreground mt-1">
-            Live native Mosquitto MQTT event loop + Deterministic Rules Engine
+            {source === "live"
+              ? "Live machine telemetry refreshed every five seconds"
+              : "Simulated telemetry — connect a production data source to enable live monitoring"}
           </p>
         </div>
         <div
@@ -55,7 +57,7 @@ export default function QualityMonitoringPage() {
             className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
               }`}
           />
-          {connected ? "Live IoT WebSockets Active" : "Reconnecting..."}
+          {connected ? "Live telemetry active" : "Demo telemetry active"}
         </div>
       </div>
 
@@ -81,9 +83,9 @@ export default function QualityMonitoringPage() {
               <Network className="h-4 w-4 text-muted-foreground" />
               <span className="font-semibold text-sm">Real-time Telemetry Grid</span>
             </div>
-            {!connected && (
-              <span className="text-xs text-muted-foreground animate-pulse">Connecting to broker...</span>
-            )}
+            <span className="text-xs text-muted-foreground">
+              {connected ? "Last refresh: under 5 seconds" : "Simulated feed"}
+            </span>
           </div>
           <div className="overflow-x-auto">
             <Table>
@@ -115,9 +117,11 @@ export default function QualityMonitoringPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {[
-              { label: "1Hz", title: "IoT Simulators", desc: "10 virtual CNC agents publish shifting physics variables to a local amqtt broker on port 1883." },
-              { label: "2", title: "Consumer Queue", desc: "The FastAPI native loop intercepts JSON packets without network proxy polling." },
-              { label: "DB", title: "Deterministic Engine", desc: "Engine validates metrics, inserts to Postgres, and broadcasts arrays down the WebSocket." },
+              source === "live"
+                ? { label: "LIVE", title: "Production telemetry", desc: "The dashboard reads the latest machine states from the deployed quality service every five seconds." }
+                : { label: "DEMO", title: "Simulated telemetry", desc: "Illustrative machine readings are shown because no production machine records are available yet." },
+              { label: "RULES", title: "Deterministic Engine", desc: "Health, quality, and risk are calculated from the collected machine readings." },
+              { label: "ACTION", title: "Operational alerts", desc: "High-risk machines can be routed to the maintenance team with a recommended inspection action." },
             ].map((step) => (
               <div key={step.label} className="flex items-start gap-3">
                 <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground shrink-0 text-xs font-bold font-mono">
