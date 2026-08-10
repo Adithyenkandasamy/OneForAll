@@ -21,14 +21,13 @@ from mcp.types import Tool, TextContent
 
 load_dotenv()
 
+SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
 CREDENTIALS_PATH = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 SPREADSHEET_ID = os.environ.get("SHEETS_SPREADSHEET_ID")
 SHEET_NAME = os.environ.get("SHEETS_RANGE", "Sheet1!A1:H1000").split("!")[0]
 
-if not CREDENTIALS_PATH or not SPREADSHEET_ID:
-    raise RuntimeError(
-        "Missing GOOGLE_APPLICATION_CREDENTIALS or SHEETS_SPREADSHEET_ID in environment"
-    )
+if not (SERVICE_ACCOUNT_JSON or CREDENTIALS_PATH) or not SPREADSHEET_ID:
+    raise RuntimeError("Missing Google service-account credentials or SHEETS_SPREADSHEET_ID")
 
 gc = None
 ws = None
@@ -36,10 +35,18 @@ ws = None
 df: pd.DataFrame | None = None
 
 
+def _google_client() -> gspread.Client:
+    """Use a local credential file in development or JSON in serverless hosts."""
+    if SERVICE_ACCOUNT_JSON:
+        return gspread.service_account_from_dict(json.loads(SERVICE_ACCOUNT_JSON))
+    assert CREDENTIALS_PATH is not None
+    return gspread.service_account(filename=CREDENTIALS_PATH)
+
+
 def _load_data() -> pd.DataFrame:
     global df, gc, ws
     if gc is None:
-        gc = gspread.service_account(filename=CREDENTIALS_PATH)
+        gc = _google_client()
         ws = gc.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
     # ALWAYS fetch fresh records since this acts as a real-time gateway!
     records = ws.get_all_records()

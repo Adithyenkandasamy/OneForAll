@@ -41,6 +41,9 @@ uv run uvicorn app.main:app --reload
   use the session pooler, e.g. `postgresql+asyncpg://postgres.<ref>:<pwd>@aws-0-<region>.pooler.supabase.com:5432/postgres`.
 - `GOOGLE_PROJECT_ID` — Google Cloud project id for the sheets service account.
 - `GOOGLE_APPLICATION_CREDENTIALS` — absolute path to the service-account JSON key.
+- `GOOGLE_SERVICE_ACCOUNT_JSON` — complete service-account JSON for serverless hosts
+  such as Vercel, where a local credential-file path is unavailable. Store it only
+  in the host's encrypted environment-variable settings.
 - `SHEETS_SPREADSHEET_ID` — the inventory Google Sheet (injected into every sheets call).
 - `SHEETS_RANGE` — A1 range of the inventory table, e.g. `Inventory!A1:H1000`.
 
