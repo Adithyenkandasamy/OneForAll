@@ -74,7 +74,7 @@ class InventoryService:
         return rows
 
     async def _create_risk_notifications(self, analyses: list, user_id: str) -> None:
-        """Create notifications for HIGH risk materials."""
+        """Create notifications for HIGH risk materials (skip if already notified today)."""
         if self._notification_service is None:
             return
 
@@ -82,7 +82,16 @@ class InventoryService:
         if not high_risk:
             return
 
+        # Check existing notifications to avoid duplicates
+        existing = await self._notification_service.list_for_user(user_id, unread_only=True)
+        existing_skus = {
+            n.payload.get("sku") for n in existing if n.payload and n.payload.get("sku")
+        }
+
         for material in high_risk:
+            if material.sku in existing_skus:
+                continue
+
             kind = "stockout" if material.stockout_detected else "low_stock"
             title = f"Stock Alert: {material.name} ({material.sku})"
             body = (
@@ -223,8 +232,10 @@ class InventoryService:
         report = self._report_service.generate_summary(analyses, health)
         return asdict(report)
 
-    async def get_enriched_materials(self) -> list[dict]:
+    async def get_enriched_materials(self, *, user_id: str | None = None) -> list[dict]:
         """Return all materials with deterministic analysis applied."""
         rows = await self._fetch_all_rows()
         analyses = self._rule_engine.analyze_all(rows)
+        if user_id:
+            await self._create_risk_notifications(analyses, user_id)
         return [asdict(a) for a in analyses]

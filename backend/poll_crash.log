@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "/home/adhi/Adhii/OneForAll/backend/app/agents/quality/scheduler/polling_service.py", line 27, in run
-    await self._cycle(client)
-  File "/home/adhi/Adhii/OneForAll/backend/app/agents/quality/scheduler/polling_service.py", line 38, in _cycle
-    resp.raise_for_status()
-  File "/home/adhi/Adhii/OneForAll/backend/.venv/lib/python3.10/site-packages/httpx/_models.py", line 763, in raise_for_status
-    raise HTTPStatusError(message, request=request, response=self)
-httpx.HTTPStatusError: Server error '500 Internal Server Error' for url 'https://my.api.mockaroo.com/manufacturing_quality_data.json?key=0357c980'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500

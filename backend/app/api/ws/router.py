@@ -32,6 +32,6 @@ async def dashboard_websocket(websocket: WebSocket):
     finally:
         # Cleanup memory leak risk on UI tab closures
         try:
-            bus._subscribers["quality:updated"].remove(event_listener)
+            bus.subscribers["quality:updated"].remove(event_listener)
         except ValueError:
             pass

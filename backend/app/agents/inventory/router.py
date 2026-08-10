@@ -113,8 +113,8 @@ async def report(
 
 @router.get("/materials", response_model=list[MaterialAnalysisDTO])
 async def enriched_materials(
-    _: CurrentUser,
+    current_user: CurrentUser,
     service: InventoryService = Depends(get_inventory_service),
 ) -> list[dict]:
-    return await service.get_enriched_materials()
+    return await service.get_enriched_materials(user_id=current_user.id)
 

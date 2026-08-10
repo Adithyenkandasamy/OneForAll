@@ -30,14 +30,17 @@ if not CREDENTIALS_PATH or not SPREADSHEET_ID:
         "Missing GOOGLE_APPLICATION_CREDENTIALS or SHEETS_SPREADSHEET_ID in environment"
     )
 
-gc = gspread.service_account(filename=CREDENTIALS_PATH)
-ws = gc.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
+gc = None
+ws = None
 
 df: pd.DataFrame | None = None
 
 
 def _load_data() -> pd.DataFrame:
-    global df
+    global df, gc, ws
+    if gc is None:
+        gc = gspread.service_account(filename=CREDENTIALS_PATH)
+        ws = gc.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
     # ALWAYS fetch fresh records since this acts as a real-time gateway!
     records = ws.get_all_records()
     df = pd.DataFrame(records)

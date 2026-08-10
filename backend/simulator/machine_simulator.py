@@ -80,7 +80,9 @@ async def run_broker():
     await broker.start()
     return broker
 
-async def machine_worker(m_id, client):
+async def machine_worker(m_id):
+    client = MQTTClient()
+    await client.connect('mqtt://127.0.0.1:1883/')
     physics = MachinePhysics(m_id)
     topic = f"factory/machines/{m_id}"
     while True:
@@ -91,6 +93,7 @@ async def machine_worker(m_id, client):
             pass
         await asyncio.sleep(1.0) # 1 Hertz publishing frequency
 
+
 async def main():
     broker = await run_broker()
     print("Embedded amqtt broker started on 1883", flush=True)
@@ -98,10 +101,7 @@ async def main():
     # Let broker boot
     await asyncio.sleep(1)
 
-    client = MQTTClient()
-    await client.connect('mqtt://127.0.0.1:1883/')
-
-    workers = [asyncio.create_task(machine_worker(m, client)) for m in MACHINES]
+    workers = [asyncio.create_task(machine_worker(m)) for m in MACHINES]
     print(f"Booted {len(MACHINES)} virtual machine telemetry streams.", flush=True)
     
     await asyncio.gather(*workers)

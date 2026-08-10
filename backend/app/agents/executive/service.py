@@ -16,6 +16,7 @@ from app.shared.llm.base import ToolDefinition
 
 from app.agents.inventory.service import InventoryService
 from app.agents.inventory.mcp_tools import SheetsMcpGateway
+from app.agents.quality.services.service import QualityService
 
 logger = get_logger(__name__)
 
@@ -27,7 +28,8 @@ CRITICAL RULES:
 2. You do not calculate risk, days remaining, or health yourself. The backend rule engines pre-compute these. Your job is to EXPLAIN them intelligently.
 3. Be concise, strategic, and professional. Do not just dump raw JSON arrays back to the user. Synthesize the data into actionable business intelligence.
 4. If the user asks about the overall status, query the dashboard or health tools, then provide a high-level executive summary. Only list specific materials if they are critical or requested.
-5. Use markdown formatting intelligently (bolding key numbers).
+5. If the user asks about machine health, CNC node telemetry, or manufacturing quality, query the `get_quality_monitoring` tool to evaluate physical asset risk!
+6. Use markdown formatting intelligently (bolding key numbers).
 """
 
 class ExecutiveService:
@@ -39,6 +41,7 @@ class ExecutiveService:
             agent=None,  # Executive doesn't use the inventory local agent
             gateway=SheetsMcpGateway()
         )
+        self._quality_service = QualityService()
 
     def _get_domain_tools(self) -> list[ToolDefinition]:
         return [
@@ -66,6 +69,11 @@ class ExecutiveService:
                         "query": {"type": "string", "description": "Search term (e.g. MAT). Leave empty for all."}
                     }
                 }
+            ),
+            ToolDefinition(
+                name="get_quality_monitoring",
+                description="Get the live Quality Monitoring dashboard state, featuring real-time CNC machine IoT telemetry (Vibration, Temperature) and Health/Quality metrics.",
+                input_schema={"type": "object", "properties": {}}
             )
         ]
 
@@ -87,6 +95,8 @@ class ExecutiveService:
                     # simplistic filter
                     q = q.lower()
                     res = [m for m in res if q in str(m.get("material_id", "")).lower() or q in str(m.get("material", "")).lower()]
+            elif name == "get_quality_monitoring":
+                res = await self._quality_service.get_dashboard_state()
             else:
                 return f"ERROR: Unknown tool {name}"
             
