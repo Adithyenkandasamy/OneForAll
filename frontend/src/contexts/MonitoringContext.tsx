@@ -11,6 +11,7 @@ export interface MachineTelemetry {
   quality_score: number;
   risk_level: string;
   inspection_result: string;
+  status_time?: string;
 }
 
 type MonitoringSource = "live" | "demo";
@@ -75,7 +76,15 @@ export function MonitoringProvider({ children }: { children: React.ReactNode }) 
         );
         const liveMachines = response.data.machines ?? [];
 
-        if (liveMachines.length > 0) {
+        const newestUpdate = Math.max(
+          ...liveMachines.map((machine) => {
+            const timestamp = machine.status_time ? Date.parse(machine.status_time) : Number.NaN;
+            return Number.isNaN(timestamp) ? 0 : timestamp;
+          })
+        );
+        const hasFreshTelemetry = newestUpdate > 0 && Date.now() - newestUpdate < 15_000;
+
+        if (liveMachines.length > 0 && hasFreshTelemetry) {
           if (!active) return;
           setMachines(liveMachines);
           setConnected(true);
