@@ -62,7 +62,10 @@ class InventoryService:
         if cached is not None:
             return cached
 
-        result = await self._gateway.call_tool("search_materials", {"query": "MAT"})
+        # A dashboard snapshot must include every material.  Searching for the
+        # literal string "MAT" silently excluded companies whose SKU naming
+        # convention uses a different prefix.
+        result = await self._gateway.call_tool("query_inventory", {"filters": [], "limit": 1000})
         if isinstance(result, dict):
             rows = [result]
         elif isinstance(result, list):
