@@ -72,21 +72,23 @@ class MQTTConsumer:
             status_dto = self.rules.evaluate(dto)
 
             # 3. Upsert Stateful Metric block
+            state_values = status_dto.model_dump(exclude={"issues"})
             status_obj = await session.get(MachineState, m_id)
             if not status_obj:
-                status_obj = MachineState(**status_dto.model_dump())
+                status_obj = MachineState(**state_values)
                 session.add(status_obj)
             else:
-                for k, v in status_dto.model_dump().items():
+                for k, v in state_values.items():
                     setattr(status_obj, k, v)
                     
             # 4. Generate Internal Notification Event triggers if risk reaches limits
-            if status_dto.risk_level == "HIGH":
+            if status_dto.issues:
+                highest = next((issue for issue in status_dto.issues if issue.severity == "CRITICAL"), status_dto.issues[0])
                 alert = QualityAlerts(
                     machine_id=m_id, 
-                    severity="CRITICAL", 
-                    message=f"Risk Level CRITICAL detected. Metric Inspection: {status_dto.inspection_result}",
-                    context_data=json_dump
+                    severity=highest.severity,
+                    message=highest.description,
+                    context_data={**json_dump, "issues": [issue.model_dump() for issue in status_dto.issues], "status": "DETECTED"},
                 )
                 session.add(alert)
                 await bus.publish("quality:alert", {"machine_id": m_id, "status": status_dto.model_dump(mode='json'), "sensor": json_dump})

@@ -24,6 +24,8 @@ from app.agents.inventory.services.rule_engine import RuleEngine
 from app.agents.inventory.services.report_service import ReportService
 from app.core.logging import get_logger
 from app.services.notification_service import NotificationService
+from app.shared.events import bus
+from app.shared.agents.base_agent import AgentResult
 
 logger = get_logger(__name__)
 
@@ -151,16 +153,29 @@ class InventoryService:
         ctx = AgentContext(
             user_id=user_id, role=role, can_write=can_write, conversation_id=conversation_id
         )
-        result = await self._agent.run(enriched_query, ctx)
+        try:
+            result = await self._agent.run(enriched_query, ctx)
+        except Exception as exc:
+            # Inventory facts remain available even if the optional LLM provider
+            # is unavailable or has not yet been configured in production.
+            logger.exception("Inventory AI provider failed; using deterministic fallback")
+            result = AgentResult(
+                content=_fallback_answer(query, analyses, health),
+                model="deterministic-fallback",
+            )
 
-        # Step 4: Publish domain event to the Internal Event Bus
-        await bus.publish(
-            "inventory:analyzed", 
-            {"analyses": analyses, "user_id": user_id}
-        )
+        # The chat response must not fail because optional side-effects fail.
+        # This is especially important on serverless cold starts, where a
+        # notification database connection can briefly be unavailable.
+        try:
+            await bus.publish("inventory:analyzed", {"analyses": analyses, "user_id": user_id})
+        except Exception:
+            logger.exception("Could not publish inventory analysis event")
 
-        # Step 5: Create notifications for high-risk materials
-        await self._create_risk_notifications(analyses, user_id)
+        try:
+            await self._create_risk_notifications(analyses, user_id)
+        except Exception:
+            logger.exception("Could not create inventory risk notifications")
 
         return {
             "content": result.content,
@@ -169,6 +184,7 @@ class InventoryService:
             "risk_flags": result.risk_flags,
             "conversation_id": conversation_id,
         }
+
 
     async def search(self, query: str, *, limit: int = 25) -> list[InventoryItemDTO]:
         result = await self._gateway.call_tool("search_materials", {"query": query})
@@ -247,3 +263,34 @@ class InventoryService:
         if user_id:
             await self._create_risk_notifications(analyses, user_id)
         return [asdict(a) for a in analyses]
+
+
+def _fallback_answer(query: str, analyses: list, health: object) -> str:
+    """Answer common inventory questions from verified rule-engine output only."""
+    question = query.lower()
+    matches = [
+        item for item in analyses
+        if (item.sku and item.sku.lower() in question)
+        or (item.name and item.name.lower() in question)
+    ]
+
+    if matches:
+        return "\n".join(
+            f"{item.name} ({item.sku}): current stock {item.current_stock}, "
+            f"minimum stock {item.minimum_stock}, risk {item.risk_level}, "
+            f"coverage {'not available' if item.days_remaining is None else f'{item.days_remaining} days'}."
+            for item in matches[:5]
+        )
+
+    if any(term in question for term in ("how many", "total", "stock", "inventory", "status")):
+        return (
+            f"Inventory currently contains {health.total_materials} material records. "
+            f"{health.high_risk_count} are high risk, {health.medium_risk_count} need monitoring, "
+            f"and {health.stockout_count} are stockouts. "
+            "Quantities use different units, so they should be reviewed per material rather than added together."
+        )
+
+    return (
+        f"Inventory health is {health.health_score}%. There are {health.total_materials} materials, "
+        f"with {health.high_risk_count} high-risk materials and {health.reorder_count} requiring reorder review."
+    )

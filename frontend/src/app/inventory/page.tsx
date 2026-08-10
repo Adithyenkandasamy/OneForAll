@@ -20,8 +20,12 @@ import { Package, AlertCircle, Loader2, Sparkles, ServerCrash, Edit2 } from "luc
 interface InventoryItem {
   sku: string;
   name: string;
+  category: string;
+  unit: string;
   current_stock: number;
   minimum_stock: number;
+  daily_consumption: number;
+  days_remaining: number | null;
   risk_level: string;
   supplier: string;
 }
@@ -192,9 +196,12 @@ export default function EditableInventoryPage() {
                 <TableRow className="bg-muted/10 hover:bg-muted/10">
                   <TableHead className="font-semibold w-[120px]">SKU</TableHead>
                   <TableHead className="font-semibold w-[250px]">Part Name</TableHead>
+                  <TableHead className="font-semibold">Category</TableHead>
                   <TableHead className="font-semibold">Supplier</TableHead>
                   <TableHead className="font-semibold w-[150px]">Quantity</TableHead>
                   <TableHead className="font-semibold w-[150px]">Threshold</TableHead>
+                  <TableHead className="font-semibold w-[130px]">Daily Use</TableHead>
+                  <TableHead className="font-semibold w-[130px]">Coverage</TableHead>
                   <TableHead className="font-semibold w-[150px]">Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -206,6 +213,9 @@ export default function EditableInventoryPage() {
                     </TableCell>
                     <TableCell className="font-medium whitespace-nowrap align-middle">
                       {item.name}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm align-middle">
+                      {item.category}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm align-middle">
                       {item.supplier || "Unknown"}
@@ -234,7 +244,7 @@ export default function EditableInventoryPage() {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className={`font-semibold ${item.current_stock <= item.minimum_stock ? 'text-red-500' : ''}`}>
-                            {item.current_stock}
+                            {item.current_stock} {item.unit}
                           </span>
                           <Edit2 className="w-3 h-3 text-transparent group-hover:text-muted-foreground/30 transition-colors" />
                         </div>
@@ -242,7 +252,15 @@ export default function EditableInventoryPage() {
                     </TableCell>
 
                     <TableCell className="text-muted-foreground align-middle">
-                      {item.minimum_stock}
+                      {item.minimum_stock} {item.unit}
+                    </TableCell>
+
+                    <TableCell className="text-muted-foreground align-middle">
+                      {item.daily_consumption} {item.unit}/day
+                    </TableCell>
+
+                    <TableCell className="text-muted-foreground align-middle">
+                      {item.days_remaining === null ? "—" : `${item.days_remaining} days`}
                     </TableCell>
 
                     {/* Status Badge */}
@@ -258,8 +276,8 @@ export default function EditableInventoryPage() {
                 ))}
                 {inventory.length === 0 && !error && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center p-8 text-muted-foreground">
-                      No inventory items found matching global MCP constraints.
+                    <TableCell colSpan={9} className="text-center p-8 text-muted-foreground">
+                      No inventory records were returned by the configured Google Sheet.
                     </TableCell>
                   </TableRow>
                 )}

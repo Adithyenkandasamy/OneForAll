@@ -50,6 +50,8 @@ class InventoryUpdateResponse(BaseModel):
 class MaterialAnalysisDTO(BaseModel):
     sku: str
     name: str
+    category: str
+    unit: str
     current_stock: int
     minimum_stock: int
     daily_consumption: int

@@ -16,6 +16,8 @@ class MaterialAnalysis:
 
     sku: str
     name: str
+    category: str
+    unit: str
     current_stock: int
     minimum_stock: int
     daily_consumption: int
@@ -42,11 +44,21 @@ class RuleEngine:
 
     def analyze_material(self, row: dict[str, Any]) -> MaterialAnalysis:
         """Analyze a single material row from the Google Sheet."""
-        sku = str(row.get("material_id") or row.get("sku") or row.get("SKU") or "")
-        name = str(row.get("material") or row.get("name") or row.get("Name") or "")
-        current_stock = self._to_int(row.get("current_stock") or row.get("qty") or row.get("quantity") or 0)
-        minimum_stock = self._to_int(row.get("minimum_stock") or row.get("reorder") or row.get("min") or 0)
-        daily_consumption = self._to_int(row.get("consumption") or row.get("daily_consumption") or 0)
+        # Support both normalized API fields and the human-readable headers
+        # used by the OneForAll Google Sheet template.
+        sku = str(row.get("material_id") or row.get("Material ID") or row.get("sku") or row.get("SKU") or "")
+        name = str(row.get("material") or row.get("Material") or row.get("name") or row.get("Name") or "")
+        category = str(row.get("category") or row.get("Category") or "Uncategorised")
+        unit = str(row.get("unit") or row.get("Unit") or "")
+        current_stock = self._to_int(
+            row.get("current_stock") or row.get("Current Stock") or row.get("qty") or row.get("quantity") or 0
+        )
+        minimum_stock = self._to_int(
+            row.get("minimum_stock") or row.get("Minimum Stock") or row.get("reorder") or row.get("min") or 0
+        )
+        daily_consumption = self._to_int(
+            row.get("consumption") or row.get("daily_consumption") or row.get("Daily Consumption") or 0
+        )
         supplier = str(row.get("supplier") or row.get("Supplier") or "Unknown")
 
         risk_level = self._compute_risk(current_stock, minimum_stock)
@@ -62,6 +74,8 @@ class RuleEngine:
         return MaterialAnalysis(
             sku=sku,
             name=name,
+            category=category,
+            unit=unit,
             current_stock=current_stock,
             minimum_stock=minimum_stock,
             daily_consumption=daily_consumption,
