@@ -189,11 +189,11 @@ export function NotificationDropdown({ unreadCount, onCountChange }: Notificatio
               <button
                 onClick={() => {
                   setIsOpen(false);
-                  router.push("/settings");
+                  router.push("/dashboard");
                 }}
                 className="w-full text-center text-xs text-blue-600 hover:text-blue-800 font-medium"
               >
-                View all notifications
+                View dashboard
               </button>
             </div>
           )}

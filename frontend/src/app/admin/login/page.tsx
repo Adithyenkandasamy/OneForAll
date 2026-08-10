@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
             }
 
             await login(res.data.access_token, res.data.refresh_token);
-            router.push("/settings");
+            router.push("/dashboard");
         } catch (err: any) {
             if (err.response?.status === 401) {
                 setError("Invalid secure credentials provided.");

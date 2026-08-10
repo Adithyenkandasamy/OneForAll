@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from app.models.notification import Notification
 from app.repositories.notification_repository import NotificationRepository
 from app.utils.ids import new_id
@@ -33,7 +35,10 @@ class NotificationService:
             notification = await self._notifications.get(notification_id)
             if notification is None or notification.user_id != user_id:
                 continue
+            if notification.is_read:
+                continue
             notification.is_read = True
+            notification.read_at = datetime.now(timezone.utc)
             count += 1
         return count
 

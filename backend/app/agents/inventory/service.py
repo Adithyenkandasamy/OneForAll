@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
+from datetime import datetime, timezone
 
 from app.agents.inventory.exceptions import InvalidUpdateError, UnauthorizedToolError
 from app.agents.inventory.mcp_tools import SheetsMcpGateway
@@ -85,10 +86,14 @@ class InventoryService:
         if not high_risk:
             return
 
-        # Check existing notifications to avoid duplicates
-        existing = await self._notification_service.list_for_user(user_id, unread_only=True)
+        # Check today's alerts, including already-read alerts. Otherwise a poll
+        # recreates the same alert immediately after a user marks it as read.
+        existing = await self._notification_service.list_for_user(user_id, limit=100)
+        today = datetime.now(timezone.utc).date()
         existing_skus = {
-            n.payload.get("sku") for n in existing if n.payload and n.payload.get("sku")
+            n.payload.get("sku")
+            for n in existing
+            if n.payload and n.payload.get("sku") and n.created_at.date() == today
         }
 
         for material in high_risk:

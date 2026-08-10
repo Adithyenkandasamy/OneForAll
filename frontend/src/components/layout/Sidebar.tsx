@@ -10,7 +10,6 @@ import {
   AlertTriangle,
   Boxes,
   LineChart,
-  Settings,
   Users,
   LogOut,
   UserCircle,
@@ -30,7 +29,6 @@ const navItems = [
   { name: "Inventory", href: "/inventory", icon: Boxes },
   { name: "Analytics", href: "/analytics", icon: LineChart },
   { name: "Team", href: "/team", icon: Users },
-  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
