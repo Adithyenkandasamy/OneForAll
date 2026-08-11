@@ -51,22 +51,8 @@ export default function QualityMonitoringPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Quality Intelligence</h1>
           <p className="text-muted-foreground mt-1">
-            {source === "live"
-              ? "Live machine telemetry refreshed every five seconds"
-              : "Simulated telemetry — connect a production data source to enable live monitoring"}
+            Live machine telemetry refreshed every five seconds
           </p>
-        </div>
-        <div
-          className={`flex items-center gap-2 px-3 py-1 rounded-md border text-xs font-semibold uppercase tracking-wide ${connected
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-rose-50 text-rose-700 border-rose-200"
-            }`}
-        >
-          <span
-            className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
-              }`}
-          />
-          {connected ? "Live telemetry active" : "Demo telemetry active"}
         </div>
       </div>
 

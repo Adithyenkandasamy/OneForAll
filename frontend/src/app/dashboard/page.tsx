@@ -59,9 +59,6 @@ export default function Dashboard() {
           <Badge variant="outline" className="px-3 py-1 text-gray-500">
             Last updated: {lastUpdated || "Syncing..."}
           </Badge>
-          <Badge variant="outline" className="px-3 py-1">
-            Simulated demonstration data
-          </Badge>
         </div>
       </div>
 
