@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRealtimeData, generateAnalyticsData } from "@/lib/mockData";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,13 +8,21 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 export default function AnalyticsPage() {
   const analyticsData = useRealtimeData(generateAnalyticsData, 6000);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  }, [analyticsData]);
 
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Production Analytics</h1>
-          <p className="text-gray-500 mt-1">Deep dive into historical performance metrics.</p>
+          <p className="text-gray-500 mt-1 flex items-center gap-2">
+            Deep dive into historical performance metrics.
+            {lastUpdated && <span className="text-xs text-muted-foreground">• Last synced: {lastUpdated}</span>}
+          </p>
         </div>
       </div>
 

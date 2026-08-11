@@ -34,6 +34,7 @@ export default function EditableInventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
 
   // Track inline editing
   const [editingCell, setEditingCell] = useState<{ sku: string, column: string } | null>(null);
@@ -48,6 +49,7 @@ export default function EditableInventoryPage() {
       // Valid minimum length query string that matches actual Material IDs to prevent 422
       const res = await api.get("/api/v1/agents/inventory/materials");
       setInventory(res.data || []);
+      setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     } catch (err: any) {
       console.error("Failed to load inventory:", err);
       if (!isSilent) setError("Failed to stream Google Sheets MCP data.");
@@ -133,7 +135,10 @@ export default function EditableInventoryPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Inventory Intelligence</h1>
-          <p className="text-muted-foreground mt-1">Material health, stock risk, and reorder decisions from your inventory source.</p>
+          <p className="text-muted-foreground mt-1 flex items-center gap-2">
+            Material health, stock risk, and reorder decisions from your inventory source.
+            {lastUpdated && <span className="text-xs text-muted-foreground">• Last synced: {lastUpdated}</span>}
+          </p>
         </div>
 
       </div>

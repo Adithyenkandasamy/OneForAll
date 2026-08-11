@@ -20,9 +20,18 @@ import {
   Database,
   Network,
 } from "lucide-react";
+import { formatTimestamp } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 export default function QualityMonitoringPage() {
   const { machines, connected, source } = useMonitoring();
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+
+  useEffect(() => {
+    if (machines.length > 0) {
+      setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    }
+  }, [machines]);
 
   const validMachines = machines.filter((m) => m.health_score > 0);
   const avgHealth = validMachines.length
@@ -84,7 +93,7 @@ export default function QualityMonitoringPage() {
               <span className="font-semibold text-sm">Real-time Telemetry Grid</span>
             </div>
             <span className="text-xs text-muted-foreground">
-              {connected ? "Last refresh: under 5 seconds" : "Simulated feed"}
+              {connected ? "Last refresh: under 5 seconds" : "Simulated feed"}{lastUpdated ? ` • Last updated: ${lastUpdated}` : ""}
             </span>
           </div>
           <div className="overflow-x-auto">
@@ -96,6 +105,7 @@ export default function QualityMonitoringPage() {
                   <TableHead className="font-semibold px-4 py-3 text-center">Health %</TableHead>
                   <TableHead className="font-semibold px-4 py-3 text-center">Quality %</TableHead>
                   <TableHead className="font-semibold px-4 py-3 text-center">Risk Vector</TableHead>
+                  <TableHead className="font-semibold px-4 py-3 text-center">Last Checked</TableHead>
                   <TableHead className="font-semibold px-4 py-3 text-right">Inspection Module</TableHead>
                 </TableRow>
               </TableHeader>
@@ -230,6 +240,9 @@ function MachineRow({ data }: any) {
         >
           {statusStr}
         </Badge>
+      </TableCell>
+      <TableCell className="px-4 py-3 text-center align-middle font-mono text-xs text-muted-foreground">
+        {data.status_time ? formatTimestamp(data.status_time) : "—"}
       </TableCell>
       <TableCell className="px-4 py-3 text-right align-middle">
         <span

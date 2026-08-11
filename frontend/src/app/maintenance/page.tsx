@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRealtimeData, generateMaintenanceRisks, generateMaintenanceSchedule } from "@/lib/mockData";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,13 +11,21 @@ import { Calendar, AlertTriangle } from "lucide-react";
 export default function MaintenancePage() {
   const risks = useRealtimeData(generateMaintenanceRisks, 5000);
   const schedule = useRealtimeData(generateMaintenanceSchedule, 8000);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  }, [risks, schedule]);
 
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Maintenance Intelligence</h1>
-          <p className="text-gray-500 mt-1">Risk-based maintenance recommendations and scheduling support.</p>
+          <p className="text-gray-500 mt-1 flex items-center gap-2">
+            Risk-based maintenance recommendations and scheduling support.
+            {lastUpdated && <span className="text-xs text-muted-foreground">• Last synced: {lastUpdated}</span>}
+          </p>
         </div>
       </div>
 

@@ -6,12 +6,13 @@ import api from "@/lib/api";
 interface Message {
   role: "user" | "bot";
   content: string;
+  timestamp?: Date;
 }
 
 export function FloatingInventoryChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: "bot", content: "Hi! I am the localized Inventory AI. I only have access to explain warehouse metrics and stock alerts. How can I help you today?" }
+    { role: "bot", content: "Hi! I am the localized Inventory AI. I only have access to explain warehouse metrics and stock alerts. How can I help you today?", timestamp: new Date() }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,7 +29,7 @@ export function FloatingInventoryChat() {
 
     const userMessage = input.trim();
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setMessages((prev) => [...prev, { role: "user", content: userMessage, timestamp: new Date() }]);
     setLoading(true);
 
     try {
@@ -39,13 +40,20 @@ export function FloatingInventoryChat() {
       
       setMessages((prev) => [
         ...prev, 
-        { role: "bot", content: res.data.content || "I couldn't generate a response." }
+        { role: "bot", content: res.data.content || "I couldn't generate a response.", timestamp: new Date() }
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat error:", error);
+      const is503 = error?.response?.status === 503;
       setMessages((prev) => [
         ...prev, 
-        { role: "bot", content: "Sorry, I lost connection to the inventory backend." }
+        { 
+          role: "bot", 
+          content: is503
+            ? "The Inventory MCP Service is currently initializing or unavailable (503). Please verify backend Google Sheets connectivity."
+            : "Sorry, I lost connection to the inventory backend.", 
+          timestamp: new Date() 
+        }
       ]);
     } finally {
       setLoading(false);
@@ -83,8 +91,15 @@ export function FloatingInventoryChat() {
                 <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-gray-200" : "bg-purple-100 text-purple-600"}`}>
                   {msg.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                 </div>
-                <div className={`px-4 py-2 rounded-2xl max-w-[75%] text-sm ${msg.role === "user" ? "bg-black text-white rounded-tr-sm" : "bg-white border shadow-sm rounded-tl-sm text-gray-800"}`}>
-                  {msg.content}
+                <div className={`flex flex-col gap-1 max-w-[75%] ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                  <div className={`px-4 py-2 rounded-2xl text-sm ${msg.role === "user" ? "bg-black text-white rounded-tr-sm" : "bg-white border shadow-sm rounded-tl-sm text-gray-800"}`}>
+                    {msg.content}
+                  </div>
+                  {msg.timestamp && (
+                    <span className="text-[10px] text-gray-400 px-1">
+                      {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

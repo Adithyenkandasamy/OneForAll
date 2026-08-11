@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRealtimeData, generateProductionData, generateEfficiencyData, generateAlerts, generateDashboardMetrics, generatePredictiveInsights } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -35,6 +36,12 @@ export default function Dashboard() {
   const metrics = useRealtimeData(generateDashboardMetrics, 4000);
   const insights = useRealtimeData(generatePredictiveInsights, 7000);
 
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  }, [productionData, efficiencyData, alerts, metrics, insights]);
+
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -48,6 +55,9 @@ export default function Dashboard() {
               <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               Operational Snapshot
             </span>
+          </Badge>
+          <Badge variant="outline" className="px-3 py-1 text-gray-500">
+            Last updated: {lastUpdated || "Syncing..."}
           </Badge>
           <Badge variant="outline" className="px-3 py-1">
             Simulated demonstration data

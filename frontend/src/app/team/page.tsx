@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRealtimeData, generateTeamData } from "@/lib/mockData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -8,12 +9,20 @@ import { Mail, Phone } from "lucide-react";
 
 export default function TeamPage() {
   const teamData = useRealtimeData(generateTeamData, 10000);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  }, [teamData]);
 
   return (
     <div className="space-y-6 pb-12">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Team Directory</h1>
-        <p className="text-gray-500 mt-1">Manage personnel and assignments.</p>
+        <p className="text-gray-500 mt-1 flex items-center gap-2">
+          Manage personnel and assignments.
+          {lastUpdated && <span className="text-xs text-muted-foreground">• Last synced: {lastUpdated}</span>}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

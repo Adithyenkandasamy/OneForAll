@@ -13,6 +13,7 @@ and re-raised by the client layer.
 from __future__ import annotations
 
 import os
+import sys
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -34,8 +35,12 @@ def _is_teardown_bug(exc: Exception) -> bool:
 
 
 async def connect_stdio(server: dict[str, Any]):
+    command = server["command"]
+    if command == "python":
+        command = sys.executable
+
     params = StdioServerParameters(
-        command=server["command"],
+        command=command,
         args=list(server.get("args", [])),
         env={**os.environ, **server.get("env", {})},
     )
