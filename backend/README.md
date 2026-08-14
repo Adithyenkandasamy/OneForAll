@@ -54,6 +54,29 @@ working database with:
 uv run python -c "import asyncio; from app.database.session import init_db; asyncio.run(init_db())"
 ```
 
+### Monitoring semantic memory
+
+The monitoring vector layer embeds only meaningful detected events; it does not
+alter the MQTT telemetry or deterministic rule-engine flow. Set these server-only
+values in `backend/.env` (never expose the service role key to the frontend):
+
+```env
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+```
+
+Run [`migrations/20260814_monitoring_embeddings.sql`](migrations/20260814_monitoring_embeddings.sql)
+in the Supabase SQL editor to enable pgvector, create `monitoring_embeddings`, and
+install the `match_monitoring_events` RPC. Then ingest the 52 mock events:
+
+```bash
+python scripts/embed_monitoring_data.py
+```
+
+`POST /api/v1/monitoring/search` accepts `query`, optional `limit` (1–20),
+`machine_id`, and `severity`; it retrieves only the most similar events for a
+future LLM context window.
+
 ### MCP integration notes
 
 MCP servers are declared **one JSON file per service** in

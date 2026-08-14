@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 from app.agents.quality.api.router import quality_router
 
-from app.api.v1 import auth, conversations, dashboard, health, history, notifications, users
+from app.api.v1 import auth, conversations, dashboard, health, history, monitoring, notifications, users
 from app.api.ws.router import router as ws_router
 
 api_router = APIRouter()
@@ -17,6 +17,7 @@ api_router.include_router(notifications.router)
 api_router.include_router(conversations.router)
 api_router.include_router(history.router)
 api_router.include_router(dashboard.router)
+api_router.include_router(monitoring.router)
 
 
 def include_agent_routers(root: APIRouter, prefix: str) -> None:

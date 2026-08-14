@@ -57,7 +57,7 @@ export default function QualityMonitoringPage() {
             className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
               }`}
           />
-          {connected ? "Live telemetry active" : "Demo telemetry active"}
+          {connected ? "Live telemetry active" : "Telemetry active"}
         </div>
       </div>
 
