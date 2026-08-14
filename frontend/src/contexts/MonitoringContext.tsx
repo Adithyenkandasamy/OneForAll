@@ -44,6 +44,7 @@ function demoMachines(tick = 0): MachineTelemetry[] {
       quality_score: quality,
       risk_level: risk,
       inspection_result: risk === "HIGH" ? "STOP & INSPECT" : risk === "MEDIUM" ? "INSPECT" : "NOMINAL",
+      status_time: new Date().toISOString(),
     };
   });
 }

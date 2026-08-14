@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRealtimeData, generatePlantsData } from "@/lib/mockData";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,13 +10,21 @@ import { Factory, MapPin } from "lucide-react";
 
 export default function PlantsPage() {
   const plantsData = useRealtimeData(generatePlantsData, 5000);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  }, [plantsData]);
 
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Global Plants</h1>
-          <p className="text-gray-500 mt-1">Overview of all manufacturing facilities.</p>
+          <p className="text-gray-500 mt-1 flex items-center gap-2">
+            Overview of all manufacturing facilities.
+            {lastUpdated && <span className="text-xs text-muted-foreground">• Last synced: {lastUpdated}</span>}
+          </p>
         </div>
       </div>
 

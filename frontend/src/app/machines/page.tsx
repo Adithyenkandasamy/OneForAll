@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRealtimeData, generateMachinesData } from "@/lib/mockData";
 import { motion } from "framer-motion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,6 +13,11 @@ import { Search, Filter, MoreHorizontal, Activity, Settings2, ShieldAlert } from
 export default function MachinesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const machinesData = useRealtimeData(generateMachinesData, 4000);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  }, [machinesData]);
 
   const filteredMachines = machinesData.filter((m) =>
     m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.id.toLowerCase().includes(searchTerm.toLowerCase())
@@ -23,7 +28,10 @@ export default function MachinesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Machine Fleet</h1>
-          <p className="text-gray-500 mt-1">Manage factory assets, operating status, uptime, and maintenance ownership.</p>
+          <p className="text-gray-500 mt-1 flex items-center gap-2 flex-wrap">
+            Manage factory assets, operating status, uptime, and maintenance ownership.
+            {lastUpdated && <span className="text-xs text-muted-foreground">• Last synced: {lastUpdated}</span>}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2">

@@ -13,6 +13,7 @@ interface ChatMessage {
   id: string;
   role: "user" | "ai";
   content: string;
+  timestamp?: Date;
 }
 
 export default function CentralAIPage() {
@@ -21,7 +22,8 @@ export default function CentralAIPage() {
     {
       id: "intro",
       role: "ai",
-      content: "Hello! I am OneForAll Copilot. I combine validated inventory, quality, maintenance, and production insights into clear recommendations. How can I help?"
+      content: "Hello! I am OneForAll Copilot. I combine validated inventory, quality, maintenance, and production insights into clear recommendations. How can I help?",
+      timestamp: new Date()
     }
   ]);
   const [chatLoading, setChatLoading] = useState(false);
@@ -39,7 +41,7 @@ export default function CentralAIPage() {
 
     const userQuery = chatQuery.trim();
     setChatQuery("");
-    setChatMessages((prev) => [...prev, { id: Date.now().toString(), role: "user", content: userQuery }]);
+    setChatMessages((prev) => [...prev, { id: Date.now().toString(), role: "user", content: userQuery, timestamp: new Date() }]);
     setChatLoading(true);
 
     try {
@@ -108,10 +110,15 @@ export default function CentralAIPage() {
                   <div className={`shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${msg.role === 'user' ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-indigo-500/20 text-indigo-500 shadow-sm'}`}>
                     {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                   </div>
-                  <div className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div className={`flex flex-col gap-1 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                     <div className={`text-sm px-4 py-3 shadow-md ${msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm' : 'bg-card rounded-2xl rounded-tl-sm border border-border leading-relaxed text-card-foreground'}`}>
                       {msg.content}
                     </div>
+                    {msg.timestamp && (
+                      <span className="text-[10px] text-muted-foreground/60 px-1">
+                        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               ))}
